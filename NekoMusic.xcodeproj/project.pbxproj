@@ -1,0 +1,449 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B1000001 /* NekoMusicApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000001 /* NekoMusicApp.swift */; };
+		B1000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002 /* ContentView.swift */; };
+		B1000003 /* Music.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000003 /* Music.swift */; };
+		B1000004 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000004 /* User.swift */; };
+		B1000005 /* Playlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000005 /* Playlist.swift */; };
+		B1000006 /* APIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000006 /* APIConfig.swift */; };
+		B1000007 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000007 /* NetworkService.swift */; };
+		B1000008 /* MusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000008 /* MusicService.swift */; };
+		B1000009 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000009 /* AuthService.swift */; };
+		B1000010 /* FavoriteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000010 /* FavoriteService.swift */; };
+		B1000011 /* AudioPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000011 /* AudioPlayerService.swift */; };
+		B1000012 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000012 /* HomeView.swift */; };
+		B1000013 /* DiscoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000013 /* DiscoverView.swift */; };
+		B1000014 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000014 /* LibraryView.swift */; };
+		B1000015 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000015 /* ProfileView.swift */; };
+		B1000016 /* NowPlayingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000016 /* NowPlayingView.swift */; };
+		B1000017 /* MiniPlayerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000017 /* MiniPlayerBar.swift */; };
+		B1000018 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000018 /* LoginView.swift */; };
+		B1000019 /* MusicListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000019 /* MusicListView.swift */; };
+		B1000020 /* PlaylistDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000020 /* PlaylistDetailView.swift */; };
+		B1000021 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2000021 /* Assets.xcassets */; };
+		B1000022 /* PlaylistImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000023 /* PlaylistImportService.swift */; };
+		B1000023 /* PlaylistImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000024 /* PlaylistImportView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B2000001 /* NekoMusicApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NekoMusicApp.swift; sourceTree = "<group>"; };
+		B2000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B2000003 /* Music.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Music.swift; sourceTree = "<group>"; };
+		B2000004 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		B2000005 /* Playlist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Playlist.swift; sourceTree = "<group>"; };
+		B2000006 /* APIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIConfig.swift; sourceTree = "<group>"; };
+		B2000007 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		B2000008 /* MusicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicService.swift; sourceTree = "<group>"; };
+		B2000009 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		B2000010 /* FavoriteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteService.swift; sourceTree = "<group>"; };
+		B2000011 /* AudioPlayerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerService.swift; sourceTree = "<group>"; };
+		B2000012 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		B2000013 /* DiscoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverView.swift; sourceTree = "<group>"; };
+		B2000014 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		B2000015 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		B2000016 /* NowPlayingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingView.swift; sourceTree = "<group>"; };
+		B2000017 /* MiniPlayerBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniPlayerBar.swift; sourceTree = "<group>"; };
+		B2000018 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		B2000019 /* MusicListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicListView.swift; sourceTree = "<group>"; };
+		B2000020 /* PlaylistDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistDetailView.swift; sourceTree = "<group>"; };
+		B2000021 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B2000022 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B2000023 /* PlaylistImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistImportService.swift; sourceTree = "<group>"; };
+		B2000024 /* PlaylistImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistImportView.swift; sourceTree = "<group>"; };
+		B2000099 /* NekoMusic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NekoMusic.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B5000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B3000001 = {
+			isa = PBXGroup;
+			children = (
+				B3000002 /* NekoMusic */,
+				B3000010 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B3000002 /* NekoMusic */ = {
+			isa = PBXGroup;
+			children = (
+				B2000001 /* NekoMusicApp.swift */,
+				B2000002 /* ContentView.swift */,
+				B2000022 /* Info.plist */,
+				B2000021 /* Assets.xcassets */,
+				B3000003 /* Models */,
+				B3000004 /* Services */,
+				B3000005 /* Views */,
+			);
+			path = NekoMusic;
+			sourceTree = "<group>";
+		};
+		B3000003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B2000003 /* Music.swift */,
+				B2000004 /* User.swift */,
+				B2000005 /* Playlist.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B3000004 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B2000006 /* APIConfig.swift */,
+				B2000007 /* NetworkService.swift */,
+				B2000008 /* MusicService.swift */,
+				B2000009 /* AuthService.swift */,
+				B2000010 /* FavoriteService.swift */,
+				B2000011 /* AudioPlayerService.swift */,
+				B2000023 /* PlaylistImportService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B3000005 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B2000012 /* HomeView.swift */,
+				B2000013 /* DiscoverView.swift */,
+				B2000014 /* LibraryView.swift */,
+				B2000015 /* ProfileView.swift */,
+				B2000016 /* NowPlayingView.swift */,
+				B2000017 /* MiniPlayerBar.swift */,
+				B2000018 /* LoginView.swift */,
+				B2000019 /* MusicListView.swift */,
+				B2000020 /* PlaylistDetailView.swift */,
+				B2000024 /* PlaylistImportView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B3000010 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B2000099 /* NekoMusic.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B4000001 /* NekoMusic */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B6000001 /* Build configuration list for PBXNativeTarget "NekoMusic" */;
+			buildPhases = (
+				B5000001 /* Sources */,
+				B5000002 /* Frameworks */,
+				B5000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NekoMusic;
+			productName = NekoMusic;
+			productReference = B2000099 /* NekoMusic.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B7000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					B4000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = B6000002 /* Build configuration list for PBXProject "NekoMusic" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "zh-Hans";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				"zh-Hans",
+			);
+			mainGroup = B3000001;
+			productRefGroup = B3000010 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B4000001 /* NekoMusic */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B5000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1000021 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B5000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1000001 /* NekoMusicApp.swift in Sources */,
+				B1000002 /* ContentView.swift in Sources */,
+				B1000003 /* Music.swift in Sources */,
+				B1000004 /* User.swift in Sources */,
+				B1000005 /* Playlist.swift in Sources */,
+				B1000006 /* APIConfig.swift in Sources */,
+				B1000007 /* NetworkService.swift in Sources */,
+				B1000008 /* MusicService.swift in Sources */,
+				B1000009 /* AuthService.swift in Sources */,
+				B1000010 /* FavoriteService.swift in Sources */,
+				B1000011 /* AudioPlayerService.swift in Sources */,
+				B1000012 /* HomeView.swift in Sources */,
+				B1000013 /* DiscoverView.swift in Sources */,
+				B1000014 /* LibraryView.swift in Sources */,
+				B1000015 /* ProfileView.swift in Sources */,
+				B1000016 /* NowPlayingView.swift in Sources */,
+				B1000017 /* MiniPlayerBar.swift in Sources */,
+				B1000018 /* LoginView.swift in Sources */,
+				B1000019 /* MusicListView.swift in Sources */,
+				B1000020 /* PlaylistDetailView.swift in Sources */,
+				B1000022 /* PlaylistImportService.swift in Sources */,
+				B1000023 /* PlaylistImportView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		B8000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Debug;
+		};
+		B8000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		B8000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8L5RMA2CJS;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NekoMusic/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = NekoMusic;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.neko.music.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		B8000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8L5RMA2CJS;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NekoMusic/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = NekoMusic;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.neko.music.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B6000001 /* Build configuration list for PBXNativeTarget "NekoMusic" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B8000003 /* Debug */,
+				B8000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B6000002 /* Build configuration list for PBXProject "NekoMusic" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B8000001 /* Debug */,
+				B8000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B7000001 /* Project object */;
+}

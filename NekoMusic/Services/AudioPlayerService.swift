@@ -41,6 +41,7 @@ class AudioPlayerService: ObservableObject {
     @Published var isFavorite: Bool = false
     @Published var playlist: [Music] = []
     @Published var currentLyrics: String = ""
+    private var lyricLines: [(time: TimeInterval, text: String)] = []
     
     private var playHistory: [Int] = []
     private var cancellables = Set<AnyCancellable>()
@@ -48,6 +49,7 @@ class AudioPlayerService: ObservableObject {
     private var lastInfoSync: Date = .distantPast
     
     private init() {
+        UIApplication.shared.beginReceivingRemoteControlEvents()
         setupAudioSession()
         setupRemoteTransportControls()
         setupNotifications()
@@ -73,45 +75,95 @@ class AudioPlayerService: ObservableObject {
     
     private func setupRemoteTransportControls() {
         let commandCenter = MPRemoteCommandCenter.shared()
-        
+
+        commandCenter.playCommand.isEnabled = true
         commandCenter.playCommand.addTarget { [weak self] _ in
-            self?.play()
+            DispatchQueue.main.async { self?.play() }
             return .success
         }
-        
+
+        commandCenter.pauseCommand.isEnabled = true
         commandCenter.pauseCommand.addTarget { [weak self] _ in
-            self?.pause()
+            DispatchQueue.main.async { self?.pause() }
             return .success
         }
-        
+
+        commandCenter.togglePlayPauseCommand.isEnabled = true
+        commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
+            DispatchQueue.main.async { self?.togglePlayPause() }
+            return .success
+        }
+
+        commandCenter.nextTrackCommand.isEnabled = true
         commandCenter.nextTrackCommand.addTarget { [weak self] _ in
-            self?.next()
+            DispatchQueue.main.async { self?.next() }
             return .success
         }
-        
+
+        commandCenter.previousTrackCommand.isEnabled = true
         commandCenter.previousTrackCommand.addTarget { [weak self] _ in
-            self?.previous()
+            DispatchQueue.main.async { self?.previous() }
             return .success
         }
-        
+
+        commandCenter.changePlaybackPositionCommand.isEnabled = true
         commandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
             guard let event = event as? MPChangePlaybackPositionCommandEvent else {
                 return .commandFailed
             }
-            self?.seekTo(position: event.positionTime)
+            let position = event.positionTime
+            DispatchQueue.main.async { self?.seekTo(position: position) }
+            return .success
+        }
+
+        // 前进 / 后退 15 秒
+        commandCenter.skipForwardCommand.isEnabled = true
+        commandCenter.skipForwardCommand.preferredIntervals = [15]
+        commandCenter.skipForwardCommand.addTarget { [weak self] event in
+            guard let self = self,
+                  let interval = (event as? MPSkipIntervalCommandEvent)?.interval else {
+                return .commandFailed
+            }
+            DispatchQueue.main.async {
+                self.seekTo(position: min(self.currentPosition + interval, max(self.duration, 0)))
+            }
+            return .success
+        }
+
+        commandCenter.skipBackwardCommand.isEnabled = true
+        commandCenter.skipBackwardCommand.preferredIntervals = [15]
+        commandCenter.skipBackwardCommand.addTarget { [weak self] event in
+            guard let self = self,
+                  let interval = (event as? MPSkipIntervalCommandEvent)?.interval else {
+                return .commandFailed
+            }
+            DispatchQueue.main.async {
+                self.seekTo(position: max(self.currentPosition - interval, 0))
+            }
             return .success
         }
     }
-    
-    private func updateNowPlayingInfo() {
-        guard let music = currentMusic else {
-            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
-            return
-        }
 
-        var info: [String: Any] = [
+    // MARK: - Now Playing 内容
+
+    /// 当前唱到的歌词行；没有歌词时返回 nil
+    private var currentLyricLine: String? {
+        guard !lyricLines.isEmpty else { return nil }
+        let index = LyricsParser.index(at: currentPosition, in: lyricLines)
+        guard index >= 0, index < lyricLines.count else { return nil }
+        let text = lyricLines[index].text.trimmingCharacters(in: .whitespacesAndNewlines)
+        return text.isEmpty ? nil : text
+    }
+
+    /// 锁屏 / 控制中心显示的第二行：有歌词就显示歌词，否则显示歌手
+    private func displayArtist(for music: Music) -> String {
+        currentLyricLine ?? music.artist
+    }
+
+    private func nowPlayingDictionary(for music: Music) -> [String: Any] {
+        [
             MPMediaItemPropertyTitle: music.title,
-            MPMediaItemPropertyArtist: music.artist,
+            MPMediaItemPropertyArtist: displayArtist(for: music),
             MPMediaItemPropertyAlbumTitle: music.album,
             MPMediaItemPropertyPlaybackDuration: duration,
             MPNowPlayingInfoPropertyElapsedPlaybackTime: currentPosition,
@@ -123,7 +175,15 @@ class AudioPlayerService: ObservableObject {
             MPNowPlayingInfoPropertyPlaybackQueueCount: playlist.count,
             MPNowPlayingInfoPropertyPlaybackQueueIndex: playlist.firstIndex(where: { $0.id == music.id }) ?? 0,
         ]
+    }
 
+    private func updateNowPlayingInfo() {
+        guard let music = currentMusic else {
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+            return
+        }
+
+        var info = nowPlayingDictionary(for: music)
         if let artwork = artworkCache[music.id] {
             info[MPMediaItemPropertyArtwork] = artwork
         }
@@ -165,18 +225,7 @@ class AudioPlayerService: ObservableObject {
 
     /// 播放中节流更新进度，保证控制中心/锁屏进度条平滑
     private func syncElapsedTime() {
-        guard let music = currentMusic else { return }
-
-        var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [:]
-        info[MPMediaItemPropertyTitle] = music.title
-        info[MPMediaItemPropertyArtist] = music.artist
-        info[MPMediaItemPropertyAlbumTitle] = music.album
-        info[MPMediaItemPropertyPlaybackDuration] = duration
-        info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = currentPosition
-        info[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
-        MPNowPlayingInfoCenter.default().playbackState = isPlaying ? .playing : .paused
-        lastInfoSync = Date()
+        updateNowPlayingInfo()
     }
 
     // MARK: - 音频中断 / 线路变化
@@ -301,6 +350,7 @@ class AudioPlayerService: ObservableObject {
     }
     
     func play() {
+        try? AVAudioSession.sharedInstance().setActive(true)
         player?.play()
         isPlaying = true
         updateNowPlayingInfo()
@@ -451,23 +501,31 @@ class AudioPlayerService: ObservableObject {
     private func loadLyrics() {
         guard let music = currentMusic else {
             currentLyrics = ""
+            lyricLines = []
             return
         }
-        
-        Task {
+
+        Task { [weak self] in
+            guard let self = self else { return }
             do {
                 let lyrics = try await MusicService.shared.getLyrics(musicId: music.id)
                 await MainActor.run {
+                    guard self.currentMusic?.id == music.id else { return }
                     self.currentLyrics = lyrics
+                    self.lyricLines = LyricsParser.parse(lyrics)
+                    self.updateNowPlayingInfo()
                 }
             } catch {
                 await MainActor.run {
+                    guard self.currentMusic?.id == music.id else { return }
                     self.currentLyrics = ""
+                    self.lyricLines = []
+                    self.updateNowPlayingInfo()
                 }
             }
         }
     }
-    
+
     // MARK: - Persistence
     
     private func loadPlayMode() {

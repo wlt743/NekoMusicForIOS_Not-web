@@ -212,17 +212,11 @@ struct LyricsContentView: View {
     let currentPosition: TimeInterval
 
     private var parsedLyrics: [(time: TimeInterval, text: String)] {
-        parseLRC(lyrics)
+        LyricsParser.parse(lyrics)
     }
 
     private var currentIndex: Int {
-        let lines = parsedLyrics
-        guard !lines.isEmpty else { return -1 }
-        var index = -1
-        for (i, line) in lines.enumerated() where currentPosition >= line.time {
-            index = i
-        }
-        return index
+        LyricsParser.index(at: currentPosition, in: parsedLyrics)
     }
 
     var body: some View {
@@ -267,45 +261,5 @@ struct LyricsContentView: View {
         } else {
             proxy.scrollTo(index, anchor: .center)
         }
-    }
-
-    private func parseLRC(_ lrc: String) -> [(time: TimeInterval, text: String)] {
-        var result: [(TimeInterval, String)] = []
-        let lines = lrc.components(separatedBy: "\n")
-
-        for line in lines {
-            let pattern = "\\[(\\d{2}):(\\d{2})\\.?(\\d{0,3})\\](.*)$"
-            guard let regex = try? NSRegularExpression(pattern: pattern),
-                  let match = regex.firstMatch(in: line, range: NSRange(line.startIndex..., in: line)) else {
-                continue
-            }
-
-            let minStr = String(line[Range(match.range(at: 1), in: line)!])
-            let secStr = String(line[Range(match.range(at: 2), in: line)!])
-            let msRange = match.range(at: 3)
-            let textRange = match.range(at: 4)
-
-            let min = Double(minStr) ?? 0
-            let sec = Double(secStr) ?? 0
-            var ms: Double = 0
-            if msRange.location != NSNotFound, let range = Range(msRange, in: line) {
-                let msStr = String(line[range])
-                if !msStr.isEmpty {
-                    ms = (Double(msStr) ?? 0) / (msStr.count == 2 ? 100 : 1000)
-                }
-            }
-
-            let time = min * 60 + sec + ms
-            var text = ""
-            if textRange.location != NSNotFound, let range = Range(textRange, in: line) {
-                text = String(line[range]).trimmingCharacters(in: .whitespaces)
-            }
-
-            if !text.isEmpty {
-                result.append((time, text))
-            }
-        }
-
-        return result.sorted { $0.0 < $1.0 }
     }
 }

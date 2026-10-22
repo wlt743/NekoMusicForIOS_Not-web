@@ -1,27 +1,22 @@
 import SwiftUI
 
-enum ImportSource: String, CaseIterable {
+enum ImportSource: String, CaseIterable, Identifiable {
     case netease = "网易云音乐"
     case qq = "QQ音乐"
-    
+
+    var id: String { rawValue }
+
     var icon: String {
         switch self {
-        case .netease: return "cloud.fill"
+        case .netease: return "cloud"
         case .qq: return "music.quarternote.3"
         }
     }
-    
-    var color: Color {
-        switch self {
-        case .netease: return .red
-        case .qq: return .green
-        }
-    }
-    
+
     var placeholder: String {
         switch self {
-        case .netease: return "粘贴网易云歌单链接或ID"
-        case .qq: return "粘贴QQ音乐歌单链接或ID"
+        case .netease: return "粘贴网易云歌单链接或 ID"
+        case .qq: return "粘贴 QQ 音乐歌单链接或 ID"
         }
     }
 }
@@ -29,7 +24,7 @@ enum ImportSource: String, CaseIterable {
 struct PlaylistImportView: View {
     @EnvironmentObject var authService: AuthService
     @Environment(\.dismiss) private var dismiss
-    
+
     @State private var selectedSource: ImportSource = .netease
     @State private var inputText = ""
     @State private var isImporting = false
@@ -37,136 +32,74 @@ struct PlaylistImportView: View {
     @State private var errorMessage: String?
     @State private var showResult = false
     @State private var showError = false
-    
+
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Source Picker
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("选择来源")
-                            .font(.headline)
-                        
-                        Picker("来源", selection: $selectedSource) {
-                            ForEach(ImportSource.allCases, id: \.self) { source in
-                                HStack {
-                                    Image(systemName: source.icon)
-                                    Text(source.rawValue)
-                                }
+        NavigationStack {
+            Form {
+                Section("来源") {
+                    Picker("来源", selection: $selectedSource) {
+                        ForEach(ImportSource.allCases) { source in
+                            Label(source.rawValue, systemImage: source.icon)
                                 .tag(source)
-                            }
                         }
-                        .pickerStyle(.segmented)
                     }
-                    .padding(.horizontal)
-                    
-                    // Input Field
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("歌单链接或ID")
-                            .font(.headline)
-                        
-                        HStack {
-                            TextField(selectedSource.placeholder, text: $inputText)
-                                .textFieldStyle(.plain)
-                                .autocapitalization(.none)
-                                .disableAutocorrection(true)
-                            
-                            if !inputText.isEmpty {
-                                Button {
-                                    inputText = ""
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(.gray)
-                                }
-                            }
-                            
-                            Button {
-                                if let clipboardString = UIPasteboard.general.string {
-                                    inputText = clipboardString
-                                }
-                            } label: {
-                                Image(systemName: "doc.on.clipboard")
-                                    .foregroundColor(.blue)
-                            }
+                    .pickerStyle(.segmented)
+                }
+
+                Section {
+                    TextField(selectedSource.placeholder, text: $inputText)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+
+                    Button {
+                        if let clipboard = UIPasteboard.general.string {
+                            inputText = clipboard
                         }
-                        .padding(12)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                        
-                        Text("支持歌单分享链接或直接输入歌单ID")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                    } label: {
+                        Label("从剪贴板粘贴", systemImage: "doc.on.clipboard")
                     }
-                    .padding(.horizontal)
-                    
-                    // Info
-                    HStack(spacing: 8) {
-                        Image(systemName: "info.circle")
-                            .foregroundColor(.blue)
-                        Text("导入后将自动创建同名歌单")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.horizontal)
-                    
-                    // Import Button
+                    .buttonStyle(.borderless)
+                } header: {
+                    Text("歌单链接或 ID")
+                } footer: {
+                    Text("支持歌单分享链接或直接输入歌单 ID")
+                }
+
+                Section {
                     Button {
                         Task { await performImport() }
                     } label: {
                         HStack {
+                            Spacer()
                             if isImporting {
                                 ProgressView()
-                                    .tint(.white)
-                                    .padding(.trailing, 4)
+                            } else {
+                                Text("开始导入")
+                                    .fontWeight(.semibold)
                             }
-                            Image(systemName: "square.and.arrow.down")
-                            Text(isImporting ? "导入中..." : "开始导入")
-                                .fontWeight(.semibold)
+                            Spacer()
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(
-                            LinearGradient(
-                                colors: inputText.isEmpty ? [.gray] : [selectedSource.color, selectedSource.color.opacity(0.7)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
                     }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
                     .disabled(inputText.isEmpty || isImporting)
-                    .padding(.horizontal)
-                    
-                    // Help Section
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("使用说明")
-                            .font(.headline)
-                        
-                        VStack(alignment: .leading, spacing: 6) {
-                            helpItem(number: "1", text: "在网易云/QQ音乐中打开歌单，点击分享")
-                            helpItem(number: "2", text: "复制分享链接")
-                            helpItem(number: "3", text: "粘贴到上方输入框")
-                            helpItem(number: "4", text: "点击「开始导入」，系统将匹配曲库中的歌曲")
-                        }
-                        
-                        Text("注意：仅匹配NekoMusic曲库中已有的歌曲")
-                            .font(.caption)
-                            .foregroundColor(.orange)
-                            .padding(.top, 4)
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, 8)
+                    .listRowBackground(Color.clear)
+                } footer: {
+                    Text("导入后将自动创建同名歌单，仅匹配曲库中已有的歌曲")
                 }
-                .padding(.vertical)
+
+                Section("使用说明") {
+                    Label("在网易云 / QQ 音乐中打开歌单并分享", systemImage: "1.circle")
+                    Label("复制分享链接", systemImage: "2.circle")
+                    Label("粘贴到上方输入框", systemImage: "3.circle")
+                    Label("点击「开始导入」，系统会匹配曲库中的歌曲", systemImage: "4.circle")
+                }
             }
             .navigationTitle("导入歌单")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("关闭") {
-                        dismiss()
-                    }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("关闭") { dismiss() }
                 }
             }
             .alert("导入结果", isPresented: $showResult) {
@@ -187,57 +120,37 @@ struct PlaylistImportView: View {
             }
         }
     }
-    
-    private func helpItem(number: String, text: String) -> some View {
-        HStack(alignment: .top, spacing: 8) {
-            Text(number)
-                .font(.caption)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
-                .frame(width: 20, height: 20)
-                .background(Circle().fill(Color.blue))
-            Text(text)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-        }
-    }
-    
+
     private func performImport() async {
         let service = PlaylistImportService.shared
         var playlistId: String?
-        
+
         switch selectedSource {
         case .netease:
             playlistId = service.parseNeteasePlaylistId(inputText)
         case .qq:
             playlistId = service.parseQQPlaylistId(inputText)
         }
-        
+
         guard let id = playlistId else {
-            errorMessage = "无法解析歌单ID，请检查输入"
+            errorMessage = "无法解析歌单 ID，请检查输入"
             showError = true
             return
         }
-        
+
         isImporting = true
-        
+
         do {
             let result: ImportResult
             let token = authService.token
-            
+
             switch selectedSource {
             case .netease:
-                result = try await service.importNeteasePlaylist(
-                    playlistId: id,
-                    token: token
-                )
+                result = try await service.importNeteasePlaylist(playlistId: id, token: token)
             case .qq:
-                result = try await service.importQQPlaylist(
-                    disstid: id,
-                    token: token
-                )
+                result = try await service.importQQPlaylist(disstid: id, token: token)
             }
-            
+
             await MainActor.run {
                 self.importResult = result
                 self.isImporting = false

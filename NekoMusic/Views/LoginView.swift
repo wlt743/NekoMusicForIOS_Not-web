@@ -18,154 +18,100 @@ struct LoginView: View {
     @State private var showCodeSent = false
 
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 32) {
-                    // Logo
+        NavigationStack {
+            Form {
+                Section {
                     VStack(spacing: 12) {
                         Image(systemName: "music.note.house.fill")
-                            .font(.system(size: 64))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.pink, .purple],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .font(.system(size: 52))
+                            .foregroundStyle(.tint)
 
                         Text("NekoMusic")
-                            .font(.largeTitle)
+                            .font(.title2)
                             .fontWeight(.bold)
                     }
-                    .padding(.top, 40)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .listRowBackground(Color.clear)
+                }
 
-                    // Mode Picker
-                    Picker("", selection: $isLoginMode) {
+                Section {
+                    Picker("模式", selection: $isLoginMode) {
                         Text("登录").tag(true)
                         Text("注册").tag(false)
                     }
                     .pickerStyle(.segmented)
-                    .padding(.horizontal, 32)
+                    .listRowBackground(Color.clear)
+                }
 
-                    // Form Fields
-                    VStack(spacing: 16) {
-                        // 昵称（注册）
-                        if !isLoginMode {
-                            HStack {
-                                Image(systemName: "person.fill")
-                                    .foregroundColor(.gray)
-                                    .frame(width: 24)
-                                TextField("昵称", text: $nickname)
-                                    .textContentType(.username)
-                                    .autocapitalization(.none)
-                            }
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(12)
-                        }
+                Section {
+                    if !isLoginMode {
+                        TextField("昵称", text: $nickname)
+                            .textContentType(.username)
+                            .textInputAutocapitalization(.never)
+                    }
 
-                        // 邮箱
+                    TextField("邮箱", text: $email)
+                        .textContentType(.emailAddress)
+                        .keyboardType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+
+                    SecureField("密码", text: $password)
+                        .textContentType(isLoginMode ? .password : .newPassword)
+
+                    if !isLoginMode {
                         HStack {
-                            Image(systemName: "envelope.fill")
-                                .foregroundColor(.gray)
-                                .frame(width: 24)
-                            TextField("邮箱", text: $email)
-                                .textContentType(.emailAddress)
-                                .autocapitalization(.none)
-                                .keyboardType(.emailAddress)
-                        }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                            TextField("邮箱验证码", text: $verificationCode)
+                                .keyboardType(.numberPad)
 
-                        // 密码
-                        HStack {
-                            Image(systemName: "lock.fill")
-                                .foregroundColor(.gray)
-                                .frame(width: 24)
-                            SecureField("密码", text: $password)
-                                .textContentType(isLoginMode ? .password : .newPassword)
-                        }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
-
-                        // 验证码（注册）
-                        if !isLoginMode {
-                            HStack {
-                                Image(systemName: "number")
-                                    .foregroundColor(.gray)
-                                    .frame(width: 24)
-                                TextField("邮箱验证码", text: $verificationCode)
-                                    .keyboardType(.numberPad)
-
-                                Button {
-                                    Task { await requestCaptcha() }
-                                } label: {
-                                    if isSendingCode {
-                                        ProgressView()
-                                    } else {
-                                        Text("发送验证码")
-                                            .font(.caption)
-                                            .foregroundColor(.pink)
-                                    }
+                            Button {
+                                Task { await requestCaptcha() }
+                            } label: {
+                                if isSendingCode {
+                                    ProgressView()
+                                } else {
+                                    Text("发送验证码")
                                 }
-                                .disabled(isSendingCode)
                             }
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(12)
-
-                            Text("发送验证码前需要完成滑块验证")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                            .buttonStyle(.borderless)
+                            .disabled(isSendingCode)
                         }
                     }
-                    .padding(.horizontal, 32)
+                } footer: {
+                    if !isLoginMode {
+                        Text("发送验证码前需要完成滑块验证")
+                    } else {
+                        Text("使用注册邮箱和密码登录")
+                    }
+                }
 
-                    // Submit Button
+                Section {
                     Button {
                         Task { await submit() }
                     } label: {
                         HStack {
+                            Spacer()
                             if isLoading {
                                 ProgressView()
-                                    .tint(.white)
+                            } else {
+                                Text(isLoginMode ? "登录" : "注册")
+                                    .fontWeight(.semibold)
                             }
-                            Text(isLoginMode ? "登录" : "注册")
-                                .fontWeight(.semibold)
+                            Spacer()
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(
-                            LinearGradient(
-                                colors: [.pink, .purple],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
                     }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
                     .disabled(isLoading)
-                    .padding(.horizontal, 32)
-
-                    if isLoginMode {
-                        Text("使用注册邮箱和密码登录")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-
-                    Spacer()
+                    .listRowBackground(Color.clear)
                 }
             }
+            .navigationTitle(isLoginMode ? "登录" : "注册")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("关闭") {
-                        dismiss()
-                    }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("关闭") { dismiss() }
                 }
             }
             .sheet(isPresented: $showCaptcha) {
@@ -179,6 +125,7 @@ struct LoginView: View {
                         showCaptcha = false
                     }
                 )
+                .presentationDetents([.medium, .large])
             }
             .alert("提示", isPresented: $showError) {
                 Button("确定") {}
@@ -193,7 +140,7 @@ struct LoginView: View {
         }
     }
 
-    // MARK: - Actions
+    // MARK: - 操作
 
     private func requestCaptcha() async {
         guard !email.isEmpty else {

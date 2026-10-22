@@ -3,109 +3,82 @@ import SwiftUI
 struct LibraryView: View {
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var playerService: AudioPlayerService
+
     @State private var favorites: [FavoriteMusic] = []
-    @State private var isLoading = false
-    @State private var showLoginAlert = false
-    @State private var showImportSheet = false
-    
+    @State private var showLogin = false
+    @State private var showImport = false
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Group {
                 if !authService.isLoggedIn {
-                    VStack(spacing: 16) {
-                        Image(systemName: "person.crop.circle")
-                            .font(.system(size: 64))
-                            .foregroundColor(.gray)
-                        Text("登录后查看你的音乐库")
-                            .foregroundColor(.gray)
-                        Button("去登录") {
-                            showLoginAlert = true
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.pink)
+                    EmptyStateView(
+                        title: "登录后查看你的音乐库",
+                        systemImage: "person.crop.circle",
+                        actionTitle: "去登录"
+                    ) {
+                        showLogin = true
                     }
                 } else {
                     List {
-                        // Favorites Section
                         Section {
                             NavigationLink {
                                 FavoritesView()
                             } label: {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "heart.fill")
-                                        .foregroundColor(.pink)
-                                        .frame(width: 32)
-                                    Text("我的收藏")
-                                    Spacer()
-                                    Text("\(favorites.count)")
-                                        .foregroundColor(.secondary)
-                                }
+                                Label("我的收藏", systemImage: "heart.fill")
+                                    .badge(favorites.count)
                             }
-                            
+
                             NavigationLink {
                                 PlaylistsView()
                             } label: {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "music.note.list")
-                                        .foregroundColor(.purple)
-                                        .frame(width: 32)
-                                    Text("我的歌单")
-                                }
+                                Label("我的歌单", systemImage: "music.note.list")
                             }
                         } header: {
                             Text("我的音乐")
                         }
-                        
-                        // Import Section
+
                         Section {
                             Button {
-                                showImportSheet = true
+                                showImport = true
                             } label: {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "square.and.arrow.down")
-                                        .foregroundColor(.orange)
-                                        .frame(width: 32)
-                                    Text("导入外部歌单")
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
+                                Label("导入外部歌单", systemImage: "square.and.arrow.down")
                             }
-                            .foregroundColor(.primary)
                         } header: {
                             Text("导入")
                         } footer: {
-                            Text("支持从网易云音乐、QQ音乐导入歌单")
+                            Text("支持从网易云音乐、QQ 音乐导入歌单")
                         }
-                        
-                        // Current Playlist
+
                         if !playerService.playlist.isEmpty {
                             Section {
                                 ForEach(playerService.playlist) { music in
-                                    MusicRowView(music: music)
-                                        .listRowInsets(EdgeInsets())
-                                        .onTapGesture {
-                                            playerService.playMusic(music)
-                                        }
+                                    Button {
+                                        playerService.playMusic(music)
+                                    } label: {
+                                        MusicRow(
+                                            music: music,
+                                            isCurrent: playerService.currentMusic?.id == music.id,
+                                            isPlaying: playerService.isPlaying
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                             } header: {
-                                Text("当前播放列表 (\(playerService.playlist.count))")
+                                Text("当前播放列表（\(playerService.playlist.count)）")
                             }
                         }
                     }
                     .listStyle(.insetGrouped)
-                    .refreshable {
-                        await loadFavorites()
-                    }
+                    .refreshable { await loadFavorites() }
                 }
             }
             .navigationTitle("音乐库")
         }
-        .sheet(isPresented: $showLoginAlert) {
+        .sheet(isPresented: $showLogin) {
             LoginView()
         }
-        .sheet(isPresented: $showImportSheet) {
+        .sheet(isPresented: $showImport) {
             PlaylistImportView()
                 .environmentObject(authService)
         }
@@ -115,10 +88,10 @@ struct LibraryView: View {
             }
         }
     }
-    
+
     private func loadFavorites() async {
         guard let token = authService.token else { return }
-        
+
         do {
             let result = try await FavoriteService.shared.getFavorites(token: token)
             await MainActor.run {
@@ -130,66 +103,60 @@ struct LibraryView: View {
     }
 }
 
-// MARK: - Favorites View
+// MARK: - 我的收藏
+
 struct FavoritesView: View {
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var playerService: AudioPlayerService
+
     @State private var favorites: [FavoriteMusic] = []
     @State private var isLoading = true
-    
+
+    private var musics: [Music] {
+        favorites.map { fav in
+            Music(
+                id: fav.id, title: fav.title, artist: fav.artist, album: fav.album,
+                duration: fav.duration, filePath: nil, coverFilePath: fav.cover,
+                uploadUserId: nil, createdAt: nil, playCount: nil, lrc: nil
+            )
+        }
+    }
+
     var body: some View {
         Group {
             if isLoading {
                 ProgressView()
+                    .controlSize(.large)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if favorites.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "heart")
-                        .font(.system(size: 48))
-                        .foregroundColor(.gray)
-                    Text("还没有收藏的音乐")
-                        .foregroundColor(.gray)
-                }
+                EmptyStateView(title: "还没有收藏的音乐", systemImage: "heart")
             } else {
                 List {
-                    Button {
-                        let musics = favorites.map { fav in
-                            Music(id: fav.id, title: fav.title, artist: fav.artist, album: fav.album,
-                                  duration: fav.duration, filePath: nil, coverFilePath: fav.cover,
-                                  uploadUserId: nil, createdAt: nil, playCount: nil, lrc: nil)
+                    Section {
+                        Button {
+                            playerService.setPlaylist(musics)
+                        } label: {
+                            Label("播放全部（\(musics.count)）", systemImage: "play.fill")
+                                .frame(maxWidth: .infinity)
                         }
-                        playerService.setPlaylist(musics)
-                    } label: {
-                        HStack {
-                            Image(systemName: "play.fill")
-                            Text("播放全部")
-                        }
-                        .foregroundColor(.pink)
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .listRowInsets(EdgeInsets(top: 8, leading: Layout.horizontalPadding, bottom: 8, trailing: Layout.horizontalPadding))
+                        .listRowBackground(Color.clear)
                     }
-                    
-                    ForEach(favorites) { fav in
-                        HStack(spacing: 12) {
-                            RemoteImage(url: APIConfig.buildMusicCoverURL(musicId: fav.id, coverFilePath: fav.cover)) { image in
-                                image.resizable().aspectRatio(contentMode: .fill)
-                            } placeholder: {
-                                RoundedRectangle(cornerRadius: 6)
-                                    .fill(Color.gray.opacity(0.2))
-                                    .overlay(Image(systemName: "music.note").font(.caption).foregroundColor(.gray))
+
+                    Section {
+                        ForEach(Array(musics.enumerated()), id: \.element.id) { index, music in
+                            Button {
+                                playerService.setPlaylist(musics, startAt: index)
+                            } label: {
+                                MusicRow(
+                                    music: music,
+                                    isCurrent: playerService.currentMusic?.id == music.id,
+                                    isPlaying: playerService.isPlaying
+                                )
                             }
-                            .frame(width: 48, height: 48)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(fav.title).font(.body).lineLimit(1)
-                                Text(fav.artist).font(.caption).foregroundColor(.secondary).lineLimit(1)
-                            }
-                            Spacer()
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            let music = Music(id: fav.id, title: fav.title, artist: fav.artist, album: fav.album,
-                                              duration: fav.duration, filePath: nil, coverFilePath: fav.cover,
-                                              uploadUserId: nil, createdAt: nil, playCount: nil, lrc: nil)
-                            playerService.playMusic(music)
+                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -198,13 +165,18 @@ struct FavoritesView: View {
         }
         .navigationTitle("我的收藏")
         .task {
-            await loadFavorites()
+            if favorites.isEmpty {
+                await loadFavorites()
+            }
         }
     }
-    
+
     private func loadFavorites() async {
-        guard let token = authService.token else { return }
-        
+        guard let token = authService.token else {
+            isLoading = false
+            return
+        }
+
         do {
             let result = try await FavoriteService.shared.getFavorites(token: token)
             await MainActor.run {
@@ -219,31 +191,30 @@ struct FavoritesView: View {
     }
 }
 
-// MARK: - Playlists View
+// MARK: - 我的歌单
+
 struct PlaylistsView: View {
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var playerService: AudioPlayerService
+
     @State private var playlists: [PlaylistInfo] = []
     @State private var isLoading = true
-    @State private var showCreateSheet = false
+    @State private var showCreateAlert = false
     @State private var newPlaylistName = ""
-    
+
     var body: some View {
         Group {
             if isLoading {
                 ProgressView()
+                    .controlSize(.large)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if playlists.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "music.note.list")
-                        .font(.system(size: 48))
-                        .foregroundColor(.gray)
-                    Text("还没有创建歌单")
-                        .foregroundColor(.gray)
-                    Button("创建歌单") {
-                        showCreateSheet = true
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.pink)
+                EmptyStateView(
+                    title: "还没有创建歌单",
+                    systemImage: "music.note.list",
+                    actionTitle: "创建歌单"
+                ) {
+                    showCreateAlert = true
                 }
             } else {
                 List {
@@ -251,38 +222,33 @@ struct PlaylistsView: View {
                         NavigationLink {
                             PlaylistDetailView(playlistId: playlist.id, playlistName: playlist.name)
                         } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "music.note.list")
-                                    .foregroundColor(.purple)
-                                    .frame(width: 40, height: 40)
-                                    .background(Color.purple.opacity(0.1))
-                                    .cornerRadius(6)
-                                
-                                VStack(alignment: .leading, spacing: 4) {
+                            Label {
+                                VStack(alignment: .leading, spacing: 2) {
                                     Text(playlist.name)
-                                        .font(.body)
                                     Text("\(playlist.musicCount) 首")
                                         .font(.caption)
-                                        .foregroundColor(.secondary)
+                                        .foregroundStyle(.secondary)
                                 }
+                            } icon: {
+                                Image(systemName: "music.note.list")
                             }
                         }
                     }
                 }
-                .listStyle(.plain)
+                .listStyle(.insetGrouped)
             }
         }
         .navigationTitle("我的歌单")
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .primaryAction) {
                 Button {
-                    showCreateSheet = true
+                    showCreateAlert = true
                 } label: {
-                    Image(systemName: "plus")
+                    Label("创建歌单", systemImage: "plus")
                 }
             }
         }
-        .alert("创建歌单", isPresented: $showCreateSheet) {
+        .alert("创建歌单", isPresented: $showCreateAlert) {
             TextField("歌单名称", text: $newPlaylistName)
             Button("创建") {
                 Task { await createPlaylist() }
@@ -292,13 +258,18 @@ struct PlaylistsView: View {
             }
         }
         .task {
-            await loadPlaylists()
+            if playlists.isEmpty {
+                await loadPlaylists()
+            }
         }
     }
-    
+
     private func loadPlaylists() async {
-        guard let token = authService.token else { return }
-        
+        guard let token = authService.token else {
+            isLoading = false
+            return
+        }
+
         do {
             let response: PlaylistListResponse = try await NetworkService.shared.get(
                 url: APIConfig.myPlaylistsURL(),
@@ -314,14 +285,14 @@ struct PlaylistsView: View {
             }
         }
     }
-    
+
     private func createPlaylist() async {
         guard let token = authService.token, !newPlaylistName.isEmpty else { return }
-        
+
         struct CreateRequest: Codable {
             let name: String
         }
-        
+
         do {
             let _: PlaylistResponse = try await NetworkService.shared.post(
                 url: APIConfig.playlistCreateURL(),

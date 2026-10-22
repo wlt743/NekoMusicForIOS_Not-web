@@ -5,47 +5,31 @@ struct ContentView: View {
     @EnvironmentObject var playerService: AudioPlayerService
     @State private var selectedTab = 0
     @State private var showNowPlaying = false
-    
+
     var body: some View {
-        ZStack(alignment: .bottom) {
-            TabView(selection: $selectedTab) {
-                HomeView()
-                    .tabItem {
-                        Image(systemName: "house.fill")
-                        Text("首页")
-                    }
-                    .tag(0)
-                
-                DiscoverView()
-                    .tabItem {
-                        Image(systemName: "magnifyingglass")
-                        Text("发现")
-                    }
-                    .tag(1)
-                
-                LibraryView()
-                    .tabItem {
-                        Image(systemName: "music.note.list")
-                        Text("音乐库")
-                    }
-                    .tag(2)
-                
-                ProfileView()
-                    .tabItem {
-                        Image(systemName: "person.fill")
-                        Text("我的")
-                    }
-                    .tag(3)
-            }
-            .accentColor(.pink)
-            
-            // Mini Player Bar
+        TabView(selection: $selectedTab) {
+            HomeView()
+                .tabItem { Label("首页", systemImage: "house") }
+                .tag(0)
+
+            DiscoverView()
+                .tabItem { Label("发现", systemImage: "magnifyingglass") }
+                .tag(1)
+
+            LibraryView()
+                .tabItem { Label("音乐库", systemImage: "music.note.list") }
+                .tag(2)
+
+            ProfileView()
+                .tabItem { Label("我的", systemImage: "person") }
+                .tag(3)
+        }
+        .tint(.accentColor)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             if playerService.currentMusic != nil {
-                VStack(spacing: 0) {
-                    Spacer()
-                    MiniPlayerBar(showNowPlaying: $showNowPlaying)
-                        .padding(.bottom, 49) // Tab bar height
-                }
+                MiniPlayerBar(showNowPlaying: $showNowPlaying)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 4)
             }
         }
         .fullScreenCover(isPresented: $showNowPlaying) {

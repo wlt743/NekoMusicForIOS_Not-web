@@ -33,6 +33,7 @@
 		B1000024 /* NonceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000025 /* NonceService.swift */; };
 		B1000025 /* RemoteImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000026 /* RemoteImageView.swift */; };
 		B1000026 /* SliderCaptchaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000027 /* SliderCaptchaView.swift */; };
+		B1000027 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000028 /* DesignSystem.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -60,6 +61,7 @@
 		B2000022 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B2000023 /* PlaylistImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistImportService.swift; sourceTree = "<group>"; };
 		B2000025 /* NonceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonceService.swift; sourceTree = "<group>"; };
+		B2000028 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		B2000027 /* SliderCaptchaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SliderCaptchaView.swift; sourceTree = "<group>"; };
 		B2000026 /* RemoteImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteImageView.swift; sourceTree = "<group>"; };
 		B2000024 /* PlaylistImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistImportView.swift; sourceTree = "<group>"; };
@@ -139,6 +141,7 @@
 				B2000024 /* PlaylistImportView.swift */,
 				B2000026 /* RemoteImageView.swift */,
 				B2000027 /* SliderCaptchaView.swift */,
+				B2000028 /* DesignSystem.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -246,6 +249,7 @@
 				B1000024 /* NonceService.swift in Sources */,
 				B1000025 /* RemoteImageView.swift in Sources */,
 				B1000026 /* SliderCaptchaView.swift in Sources */,
+				B1000027 /* DesignSystem.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

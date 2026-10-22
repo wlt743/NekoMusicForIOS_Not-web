@@ -3,86 +3,66 @@ import SwiftUI
 struct MiniPlayerBar: View {
     @EnvironmentObject var playerService: AudioPlayerService
     @Binding var showNowPlaying: Bool
-    
+
+    private var progress: Double {
+        guard playerService.duration > 0 else { return 0 }
+        return min(max(playerService.currentPosition / playerService.duration, 0), 1)
+    }
+
     var body: some View {
         HStack(spacing: 12) {
-            // Cover
             if let music = playerService.currentMusic {
-                RemoteImage(url: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath)) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Color.gray.opacity(0.3))
-                        .overlay(
-                            Image(systemName: "music.note")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                        )
-                }
-                .frame(width: 44, height: 44)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                CoverImage(
+                    url: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath),
+                    size: Layout.miniCoverSize,
+                    cornerRadius: 8
+                )
             }
-            
-            // Title & Artist
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(playerService.currentMusic?.title ?? "")
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .lineLimit(1)
-                
                 Text(playerService.currentMusic?.artist ?? "")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
-            
-            Spacer()
-            
-            // Play/Pause Button
+
+            Spacer(minLength: 8)
+
             Button {
                 playerService.togglePlayPause()
             } label: {
                 Image(systemName: playerService.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.title2)
-                    .foregroundColor(.primary)
+                    .font(.title3)
+                    .frame(width: 32, height: 32)
             }
-            
-            // Next Button
+            .buttonStyle(.plain)
+            .accessibilityLabel(playerService.isPlaying ? "暂停" : "播放")
+
             Button {
                 playerService.next()
             } label: {
                 Image(systemName: "forward.fill")
                     .font(.body)
-                    .foregroundColor(.primary)
+                    .frame(width: 32, height: 32)
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel("下一首")
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(
-            .ultraThinMaterial,
-            in: RoundedRectangle(cornerRadius: 16)
-        )
-        .overlay(
-            // Progress indicator
-            GeometryReader { geo in
-                let progress = playerService.duration > 0
-                    ? playerService.currentPosition / playerService.duration
-                    : 0
-                
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.clear)
-                    .overlay(alignment: .bottom) {
-                        Rectangle()
-                            .fill(Color.pink)
-                            .frame(width: geo.size.width * progress, height: 2)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-            }
-        )
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .glassSurface(Capsule())
+        .overlay(alignment: .bottom) {
+            ProgressView(value: progress)
+                .progressViewStyle(.linear)
+                .tint(.accentColor)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 1)
+        }
+        .contentShape(Capsule())
         .onTapGesture {
             showNowPlaying = true
         }

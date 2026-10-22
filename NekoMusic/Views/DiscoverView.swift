@@ -2,199 +2,183 @@ import SwiftUI
 
 struct DiscoverView: View {
     @EnvironmentObject var playerService: AudioPlayerService
+
     @State private var searchText = ""
     @State private var searchResults: [Music] = []
+    @State private var searchPlaylists: [PlaylistInfo] = []
     @State private var isSearching = false
     @State private var hasSearched = false
-    @State private var playlists: [PlaylistInfo] = []
-    @State private var isLoadingPlaylists = true
-    
+    @State private var errorMessage: String?
+
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                // Search Bar
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.gray)
-                    
-                    TextField("搜索音乐、歌手", text: $searchText)
-                        .textFieldStyle(.plain)
-                        .onSubmit {
-                            Task { await performSearch() }
-                        }
-                    
-                    if !searchText.isEmpty {
-                        Button {
-                            searchText = ""
-                            searchResults = []
-                            hasSearched = false
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.gray)
-                        }
-                    }
-                }
-                .padding(12)
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
-                .padding(.horizontal)
-                .padding(.top, 8)
-                
+        NavigationStack {
+            Group {
                 if isSearching {
-                    Spacer()
-                    ProgressView("搜索中...")
-                    Spacer()
+                    ProgressView("搜索中…")
+                        .controlSize(.large)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if hasSearched {
-                    // Search Results
-                    if searchResults.isEmpty {
-                        Spacer()
-                        VStack(spacing: 12) {
-                            Image(systemName: "magnifyingglass")
-                                .font(.system(size: 48))
-                                .foregroundColor(.gray)
-                            Text("未找到相关音乐")
-                                .foregroundColor(.gray)
-                        }
-                        Spacer()
-                    } else {
-                        List {
-                            ForEach(searchResults) { music in
-                                MusicRowView(music: music)
-                                    .listRowInsets(EdgeInsets())
-                                    .onTapGesture {
-                                        playerService.setPlaylist(searchResults, startAt: searchResults.firstIndex(of: music) ?? 0)
-                                    }
-                            }
-                        }
-                        .listStyle(.plain)
-                    }
+                    resultsContent
                 } else {
-                    // Recommended Playlists
-                    if isLoadingPlaylists {
-                        Spacer()
-                        ProgressView()
-                        Spacer()
-                    } else if !playlists.isEmpty {
-                        ScrollView {
-                            VStack(alignment: .leading, spacing: 16) {
-                                Text("推荐歌单")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                    .padding(.horizontal)
-                                    .padding(.top, 16)
-                                
-                                LazyVGrid(columns: [
-                                    GridItem(.flexible()),
-                                    GridItem(.flexible())
-                                ], spacing: 16) {
-                                    ForEach(playlists) { playlist in
-                                        NavigationLink {
-                                            PlaylistDetailView(playlistId: playlist.id, playlistName: playlist.name)
-                                        } label: {
-                                            PlaylistCardView(playlist: playlist)
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                }
-                                .padding(.horizontal)
-                                
-                                Color.clear.frame(height: 80)
-                            }
-                        }
-                    } else {
-                        Spacer()
-                        Text("输入关键词搜索音乐")
-                            .foregroundColor(.gray)
-                        Spacer()
-                    }
+                    EmptyStateView(
+                        title: "搜索音乐、歌单",
+                        systemImage: "magnifyingglass",
+                        description: "输入歌名、歌手或歌单关键词"
+                    )
                 }
             }
             .navigationTitle("发现")
-        }
-        .task {
-            await loadPlaylists()
+            .searchable(text: $searchText, prompt: "搜索音乐、歌手")
+            .submitLabel(.search)
+            .onSubmit(of: .search) {
+                Task { await performSearch() }
+            }
+            .onChange(of: searchText) { newValue in
+                if newValue.trimmingCharacters(in: .whitespaces).isEmpty {
+                    searchResults = []
+                    searchPlaylists = []
+                    hasSearched = false
+                }
+            }
         }
     }
-    
+
+    @ViewBuilder
+    private var resultsContent: some View {
+        if searchResults.isEmpty && searchPlaylists.isEmpty {
+            EmptyStateView(
+                title: "未找到相关内容",
+                systemImage: "magnifyingglass",
+                description: errorMessage ?? "换个关键词试试"
+            )
+        } else {
+            List {
+                if !searchResults.isEmpty {
+                    Section("歌曲") {
+                        ForEach(searchResults) { music in
+                            Button {
+                                play(searchResults, music)
+                            } label: {
+                                MusicRow(
+                                    music: music,
+                                    isCurrent: playerService.currentMusic?.id == music.id,
+                                    isPlaying: playerService.isPlaying
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+
+                if !searchPlaylists.isEmpty {
+                    Section("歌单") {
+                        ForEach(searchPlaylists) { playlist in
+                            NavigationLink {
+                                PlaylistDetailView(playlistId: playlist.id, playlistName: playlist.name)
+                            } label: {
+                                HStack(spacing: 12) {
+                                    CoverImage(
+                                        url: APIConfig.buildFullURL(path: playlist.coverPath ?? playlist.firstMusicCover ?? ""),
+                                        size: Layout.coverSize
+                                    )
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(playlist.name)
+                                            .lineLimit(1)
+                                        Text("\(playlist.musicCount) 首")
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .listStyle(.plain)
+        }
+    }
+
+    private func play(_ list: [Music], _ music: Music) {
+        let index = list.firstIndex(of: music) ?? 0
+        playerService.setPlaylist(list, startAt: index)
+    }
+
     private func performSearch() async {
-        guard !searchText.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        
+        let query = searchText.trimmingCharacters(in: .whitespaces)
+        guard !query.isEmpty else { return }
+
         isSearching = true
         hasSearched = true
-        
+        errorMessage = nil
+
+        async let songsTask = MusicService.shared.searchMusic(query: query)
+        async let playlistsTask: PlaylistListResponse = NetworkService.shared.post(
+            url: APIConfig.playlistSearchURL(),
+            body: SearchRequest(query: query)
+        )
+
+        var songs: [Music] = []
+        var playlists: [PlaylistInfo] = []
+        var failure: String?
+
         do {
-            let results = try await MusicService.shared.searchMusic(query: searchText)
-            await MainActor.run {
-                self.searchResults = results
-                self.isSearching = false
-            }
+            songs = try await songsTask
         } catch {
-            await MainActor.run {
-                self.searchResults = []
-                self.isSearching = false
-            }
+            failure = error.localizedDescription
         }
-    }
-    
-    private func loadPlaylists() async {
+
         do {
-            struct SearchBody: Codable {
-                let query: String
-            }
-            let response: PlaylistListResponse = try await NetworkService.shared.post(
-                url: APIConfig.playlistSearchURL(),
-                body: SearchBody(query: "")
-            )
-            await MainActor.run {
-                self.playlists = response.playlists ?? response.results ?? []
-                self.isLoadingPlaylists = false
-            }
+            let response = try await playlistsTask
+            playlists = response.playlists ?? response.results ?? []
         } catch {
-            await MainActor.run {
-                self.isLoadingPlaylists = false
-            }
+            failure = failure ?? error.localizedDescription
+        }
+
+        await MainActor.run {
+            self.searchResults = songs
+            self.searchPlaylists = playlists
+            self.errorMessage = failure
+            self.isSearching = false
         }
     }
 }
 
-// MARK: - Playlist Card View
-struct PlaylistCardView: View {
+// MARK: - 歌单卡片
+
+struct PlaylistCard: View {
     let playlist: PlaylistInfo
-    
+
+    private var coverURL: String {
+        APIConfig.buildFullURL(path: playlist.coverPath ?? playlist.firstMusicCover ?? "")
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Cover
-            let coverURL = playlist.coverPath ?? playlist.firstMusicCover
-            RemoteImage(url: APIConfig.buildFullURL(path: coverURL ?? "")) { image in
+            RemoteImage(url: coverURL) { image in
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
             } placeholder: {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(
-                        LinearGradient(
-                            colors: [.pink.opacity(0.3), .purple.opacity(0.3)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .overlay(
+                Rectangle()
+                    .fill(Color(.secondarySystemFill))
+                    .overlay {
                         Image(systemName: "music.note.list")
-                            .font(.title)
-                            .foregroundColor(.white.opacity(0.8))
-                    )
+                            .font(.title2)
+                            .foregroundStyle(.secondary)
+                    }
             }
-            .frame(height: 140)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            
+            .frame(height: 150)
+            .clipShape(RoundedRectangle(cornerRadius: Layout.cardRadius, style: .continuous))
+
             Text(playlist.name)
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .lineLimit(2)
-            
+
             Text("\(playlist.musicCount) 首")
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
         }
     }
 }

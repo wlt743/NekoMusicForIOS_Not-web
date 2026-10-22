@@ -69,16 +69,16 @@ struct SliderCaptchaView: View {
                     .frame(height: 40)
 
                 Capsule()
-                    .fill(Color.pink.opacity(0.25))
+                    .fill(Color.accentColor.opacity(0.25))
                     .frame(width: offset + 40, height: 40)
 
                 Circle()
                     .fill(Color.white)
-                    .overlay(Circle().stroke(Color.pink, lineWidth: 2))
+                    .overlay(Circle().stroke(Color.accentColor, lineWidth: 2))
                     .frame(width: 40, height: 40)
                     .overlay(
                         Image(systemName: "arrow.right")
-                            .foregroundColor(.pink)
+                            .foregroundStyle(.tint)
                     )
                     .offset(x: offset)
                     .gesture(dragGesture)

@@ -44,6 +44,9 @@ NekoMusic iOS 是一个轻量、原生、无广告的音乐播放器客户端。
 iOS 应用**必须签名**才能安装到设备上，NekoMusic 没有上架 App Store，也没有 TestFlight 分发，
 所以只能通过**自己编译签名**的方式装到自己的 iPhone 上。
 
+> 服务端地址已经内置在 App 中，装完即可直接注册、搜索和播放，**不需要配置任何参数**。
+> 只有想换成自己的服务端时才需要改代码，见下方「可选：自建后端」。
+
 **准备工作**
 
 1. 一台 macOS，安装 Xcode 15 或更高版本（App Store 下载）
@@ -92,25 +95,37 @@ fastlane pack           # 产出 build/NekoMusic.ipa
 Apple Configurator 或爱思助手等工具安装到已登记的设备上。
 同样需要签名，**未签名的 IPA 无法安装**。
 
-### 配置后端地址
-
-应用不自带服务端。安装前请把 `NekoMusic/Services/APIConfig.swift` 中的
-
-```swift
-static let baseURL = "https://music.cnmsb.xin"
-```
-
-改成你自己的 NekoMusic 服务地址，否则登录、搜索、播放都会失败。
-`Info.plist` 已开启 `NSAllowsArbitraryLoads`，方便在开发阶段使用 HTTP 服务；
-正式环境建议改用 HTTPS 并关闭该选项。
-
 ### 常见问题
 
 - **编译报错 `No such module` / 找不到 SDK**：确认 Xcode 已安装 iOS 平台组件
   （Xcode → Settings → Components），或升级到最新版 Xcode
 - **无法选择真机**：检查数据线、信任这台电脑，并确认已在手机上开启开发者模式
-- **应用闪退**：多为后端地址或接口不匹配，先在 Xcode 控制台查看错误日志
+- **应用闪退**：先在 Xcode 控制台查看错误日志，确认网络与服务端接口正常
 - **歌曲能搜到但播放失败**：确认后端 `/api/music/file/{id}` 可访问，且返回的是音频流
+
+---
+
+## 可选：自建后端
+
+App 默认已经指向 `https://music.cnmsb.xin`，编译安装后即可直接使用，**不需要任何配置**。
+
+只有在以下情况下才需要修改：
+
+- 想使用自己的 NekoMusic 服务端
+- 官方地址变更或服务下线
+- 二次开发、接口对接
+
+修改位置只有一个，`NekoMusic/Services/APIConfig.swift`：
+
+```swift
+static let baseURL = "https://music.cnmsb.xin"
+```
+
+把它换成自己的服务地址后重新编译即可。所有接口都由这个常量拼接，没有其他配置项，
+也没有设置页或环境变量需要填。
+
+`Info.plist` 已开启 `NSAllowsArbitraryLoads`，方便开发阶段使用 HTTP 服务；
+正式环境建议改用 HTTPS 并关闭该选项。
 
 ---
 

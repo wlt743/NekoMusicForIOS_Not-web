@@ -80,9 +80,14 @@ struct MiniPlayerAccessory: View {
                 if let music = playerService.currentMusic {
                     CoverImage(
                         url: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath),
-                        size: 34,
-                        cornerRadius: 6
+                        size: 38,
+                        cornerRadius: 9
                     )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 9, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.18), lineWidth: 0.5)
+                    )
+                    .shadow(color: .black.opacity(0.15), radius: 3, x: 0, y: 1)
                 }
 
                 VStack(alignment: .leading, spacing: 1) {
@@ -121,9 +126,9 @@ struct MiniPlayerAccessory: View {
                 .progressViewStyle(.linear)
                 .tint(.accentColor)
                 .frame(height: 3)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 10)
         }
-        .padding(.horizontal, 6)
+        .padding(.horizontal, 10)
         .padding(.vertical, 2)
         .contentShape(Rectangle())
         .onTapGesture {

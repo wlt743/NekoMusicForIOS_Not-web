@@ -8,9 +8,15 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-            if #available(iOS 26.0, *) {
-                tabs.tabViewBottomAccessory {
+            if #available(iOS 26.1, *) {
+                tabs.tabViewBottomAccessory(isEnabled: playerService.currentMusic != nil) {
                     MiniPlayerAccessory(showNowPlaying: $showNowPlaying)
+                }
+            } else if #available(iOS 26.0, *) {
+                tabs.tabViewBottomAccessory {
+                    if playerService.currentMusic != nil {
+                        MiniPlayerAccessory(showNowPlaying: $showNowPlaying)
+                    }
                 }
             } else {
                 tabs.safeAreaInset(edge: .bottom, spacing: 0) {
@@ -22,7 +28,7 @@ struct ContentView: View {
                 }
             }
         }
-            .fullScreenCover(isPresented: $showNowPlaying) {
+        .fullScreenCover(isPresented: $showNowPlaying) {
                 NowPlayingView()
                     .environmentObject(playerService)
             }

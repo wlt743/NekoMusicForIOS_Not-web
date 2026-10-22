@@ -7,14 +7,21 @@ struct ContentView: View {
     @State private var showNowPlaying = false
 
     var body: some View {
-        tabs
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                if playerService.currentMusic != nil {
-                    MiniPlayerBar(showNowPlaying: $showNowPlaying)
-                        .padding(.horizontal, 12)
-                        .padding(.bottom, 4)
+        Group {
+            if #available(iOS 26.0, *) {
+                tabs.tabViewBottomAccessory {
+                    MiniPlayerAccessory(showNowPlaying: $showNowPlaying)
+                }
+            } else {
+                tabs.safeAreaInset(edge: .bottom, spacing: 0) {
+                    if playerService.currentMusic != nil {
+                        MiniPlayerBar(showNowPlaying: $showNowPlaying)
+                            .padding(.horizontal, 12)
+                            .padding(.bottom, 4)
+                    }
                 }
             }
+        }
             .fullScreenCover(isPresented: $showNowPlaying) {
                 NowPlayingView()
                     .environmentObject(playerService)

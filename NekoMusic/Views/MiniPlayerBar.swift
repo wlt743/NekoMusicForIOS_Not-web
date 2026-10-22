@@ -68,3 +68,53 @@ struct MiniPlayerBar: View {
         }
     }
 }
+
+/// iOS 26 的 tabViewBottomAccessory 专用（系统负责位置与玻璃外观）
+struct MiniPlayerAccessory: View {
+    @EnvironmentObject var playerService: AudioPlayerService
+    @Binding var showNowPlaying: Bool
+
+    var body: some View {
+        HStack(spacing: 8) {
+            if let music = playerService.currentMusic {
+                CoverImage(
+                    url: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath),
+                    size: 36,
+                    cornerRadius: 6
+                )
+            }
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(playerService.currentMusic?.title ?? "")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                Text(playerService.currentMusic?.artist ?? "")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 6)
+
+            Button {
+                playerService.togglePlayPause()
+            } label: {
+                Image(systemName: playerService.isPlaying ? "pause.fill" : "play.fill")
+                    .font(.title3)
+                    .frame(width: 30, height: 30)
+            }
+            .buttonStyle(.borderless)
+
+            Button {
+                playerService.next()
+            } label: {
+                Image(systemName: "forward.fill")
+                    .font(.body)
+                    .frame(width: 30, height: 30)
+            }
+            .buttonStyle(.borderless)
+        }
+        .padding(.horizontal, 6)
+    }
+}

@@ -129,7 +129,7 @@ struct MusicCardView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            AsyncImage(url: URL(string: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath))) { image in
+            RemoteImage(url: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath)) { image in
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -164,7 +164,7 @@ struct MusicRowView: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            AsyncImage(url: URL(string: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath))) { image in
+            RemoteImage(url: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath)) { image in
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)

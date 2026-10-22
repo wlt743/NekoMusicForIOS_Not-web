@@ -30,6 +30,8 @@
 		B1000021 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2000021 /* Assets.xcassets */; };
 		B1000022 /* PlaylistImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000023 /* PlaylistImportService.swift */; };
 		B1000023 /* PlaylistImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000024 /* PlaylistImportView.swift */; };
+		B1000024 /* NonceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000025 /* NonceService.swift */; };
+		B1000025 /* RemoteImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000026 /* RemoteImageView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,6 +58,8 @@
 		B2000021 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B2000022 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B2000023 /* PlaylistImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistImportService.swift; sourceTree = "<group>"; };
+		B2000025 /* NonceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonceService.swift; sourceTree = "<group>"; };
+		B2000026 /* RemoteImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteImageView.swift; sourceTree = "<group>"; };
 		B2000024 /* PlaylistImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistImportView.swift; sourceTree = "<group>"; };
 		B2000099 /* NekoMusic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NekoMusic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -113,6 +117,7 @@
 				B2000010 /* FavoriteService.swift */,
 				B2000011 /* AudioPlayerService.swift */,
 				B2000023 /* PlaylistImportService.swift */,
+				B2000025 /* NonceService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -130,6 +135,7 @@
 				B2000019 /* MusicListView.swift */,
 				B2000020 /* PlaylistDetailView.swift */,
 				B2000024 /* PlaylistImportView.swift */,
+				B2000026 /* RemoteImageView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -234,6 +240,8 @@
 				B1000020 /* PlaylistDetailView.swift in Sources */,
 				B1000022 /* PlaylistImportService.swift in Sources */,
 				B1000023 /* PlaylistImportView.swift in Sources */,
+				B1000024 /* NonceService.swift in Sources */,
+				B1000025 /* RemoteImageView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -368,7 +376,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 8L5RMA2CJS;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NekoMusic/Info.plist;
@@ -383,7 +391,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.neko.music.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -398,7 +406,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 8L5RMA2CJS;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NekoMusic/Info.plist;
@@ -413,7 +421,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.neko.music.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

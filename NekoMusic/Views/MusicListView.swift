@@ -39,7 +39,7 @@ struct MusicListView: View {
                         .foregroundColor(.secondary)
                         .frame(width: 24)
                     
-                    AsyncImage(url: URL(string: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath))) { image in
+                    RemoteImage(url: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath)) { image in
                         image.resizable().aspectRatio(contentMode: .fill)
                     } placeholder: {
                         RoundedRectangle(cornerRadius: 6)

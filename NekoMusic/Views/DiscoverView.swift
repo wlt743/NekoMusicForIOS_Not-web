@@ -165,7 +165,7 @@ struct PlaylistCardView: View {
         VStack(alignment: .leading, spacing: 8) {
             // Cover
             let coverURL = playlist.coverPath ?? playlist.firstMusicCover
-            AsyncImage(url: URL(string: APIConfig.buildFullURL(path: coverURL ?? ""))) { image in
+            RemoteImage(url: APIConfig.buildFullURL(path: coverURL ?? "")) { image in
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)

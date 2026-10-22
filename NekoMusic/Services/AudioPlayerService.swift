@@ -135,32 +135,59 @@ class AudioPlayerService: ObservableObject {
     // MARK: - Playback Controls
     
     func playMusic(_ music: Music) {
-        guard let url = URL(string: APIConfig.musicFileURL(id: music.id)) else { return }
-        
-        // Add to history
+        // 记录历史
         if currentMusic?.id != music.id {
             if let currentId = currentMusic?.id {
                 playHistory.append(currentId)
             }
         }
-        
+
         currentMusic = music
-        
-        // Add to playlist if not already there
+        duration = 0
+        currentPosition = 0
+        currentLyrics = ""
+
+        // 加入当前播放列表
         if !playlist.contains(where: { $0.id == music.id }) {
             playlist.append(music)
         }
-        
-        // Create player item
+
+        // 后端新接口需要先换取真正的音频地址（带 nonce），拿到后再播放
+        Task { [weak self] in
+            guard let self = self else { return }
+            do {
+                let url = try await MusicService.shared.resolveAudioURL(musicId: music.id)
+                await MainActor.run {
+                    guard self.currentMusic?.id == music.id else { return }
+                    self.startPlayback(url: url)
+                }
+            } catch {
+                print("Resolve audio url error: \(error)")
+                await MainActor.run {
+                    guard self.currentMusic?.id == music.id else { return }
+                    self.isPlaying = false
+                }
+            }
+        }
+
+        updateNowPlayingInfo()
+        checkFavoriteStatus()
+        loadLyrics()
+    }
+
+    private func startPlayback(url: URL) {
+        // 换歌时清掉上一首的订阅，避免累积
+        cancellables.removeAll()
+
         playerItem = AVPlayerItem(url: url)
-        
+
         if player == nil {
             player = AVPlayer(playerItem: playerItem)
         } else {
             player?.replaceCurrentItem(with: playerItem)
         }
-        
-        // Observe duration
+
+        // 观察时长
         playerItem?.publisher(for: \.duration)
             .compactMap { $0.isNumeric ? CMTimeGetSeconds($0) : nil }
             .receive(on: DispatchQueue.main)
@@ -168,25 +195,21 @@ class AudioPlayerService: ObservableObject {
                 self?.duration = dur
             }
             .store(in: &cancellables)
-        
-        // Observe playback end
+
+        // 观察播放结束
         NotificationCenter.default.publisher(for: .AVPlayerItemDidPlayToEndTime, object: playerItem)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.handlePlaybackEnd()
             }
             .store(in: &cancellables)
-        
-        // Start position tracking
+
+        // 开始进度跟踪
         startPositionTracking()
-        
-        // Play
+
         player?.play()
         isPlaying = true
-        
         updateNowPlayingInfo()
-        checkFavoriteStatus()
-        loadLyrics()
     }
     
     func play() {

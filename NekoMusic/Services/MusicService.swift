@@ -1,65 +1,94 @@
 import Foundation
 
+/// 音乐详情（新接口把歌词直接放在 info 里返回）
+struct MusicInfo {
+    let music: Music
+    let lyrics: String
+    let maxQuality: String?
+}
+
 class MusicService {
     static let shared = MusicService()
-    
+
+    private let network = NetworkService.shared
+
     private init() {}
-    
+
     // MARK: - Search
-    
+
     func searchMusic(query: String) async throws -> [Music] {
-        let url = APIConfig.musicSearchURL()
-        guard let requestURL = URL(string: url) else {
-            throw NetworkError.invalidURL
-        }
-        
-        var request = URLRequest(url: requestURL)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let body = ["query": query]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-        
-        let (data, _) = try await URLSession.shared.data(for: request)
-        return try parseMusicsFromResponse(data: data, errorHint: "搜索失败", dataKey: "results")
+        let data = try await network.rawPost(
+            url: APIConfig.musicSearchURL(),
+            json: ["query": query]
+        )
+        return try parseMusicList(data: data, dataKey: "results", errorHint: "搜索失败", allowEmpty: true)
     }
-    
+
     // MARK: - Ranking
-    
-    func getRanking(limit: Int = 8) async throws -> [Music] {
-        let url = APIConfig.musicRankingURL(limit: limit)
-        guard let requestURL = URL(string: url) else {
-            throw NetworkError.invalidURL
-        }
-        
-        let (data, _) = try await URLSession.shared.data(from: requestURL)
-        return try parseMusicsFromResponse(data: data, errorHint: "获取排行榜失败", dataKey: "data")
+
+    func getRanking(limit: Int = 200) async throws -> [Music] {
+        let data = try await network.rawGet(url: APIConfig.musicRankingURL())
+        return try parseMusicList(data: data, dataKey: "data", errorHint: "获取排行榜失败")
     }
-    
+
     // MARK: - Latest
-    
+
     func getLatest(limit: Int = 300) async throws -> [Music] {
-        let url = APIConfig.musicLatestURL(limit: limit)
-        guard let requestURL = URL(string: url) else {
-            throw NetworkError.invalidURL
-        }
-        
-        let (data, _) = try await URLSession.shared.data(from: requestURL)
-        return try parseMusicsFromResponse(data: data, errorHint: "获取最新音乐失败", dataKey: "data")
+        let data = try await network.rawGet(url: APIConfig.musicLatestURL())
+        return try parseMusicList(data: data, dataKey: "data", errorHint: "获取最新音乐失败")
     }
-    
+
+    // MARK: - Music Info / Lyrics
+
+    func getMusicInfo(id: Int) async throws -> MusicInfo {
+        let data = try await network.rawGet(url: APIConfig.musicInfoURL(id: id))
+        guard
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let success = json["success"] as? Bool, success,
+            let musicData = json["data"] as? [String: Any],
+            let music = Music.fromJSON(musicData)
+        else {
+            throw NetworkError.serverError(NetworkService.message(from: data) ?? "获取音乐信息失败")
+        }
+        return MusicInfo(
+            music: music,
+            lyrics: musicData["lyrics"] as? String ?? "",
+            maxQuality: musicData["maxQuality"] as? String
+        )
+    }
+
+    func getLyrics(musicId: Int) async throws -> String {
+        try await getMusicInfo(id: musicId).lyrics
+    }
+
+    // MARK: - Audio URL
+
+    /// 新接口不再 302 到音频，而是返回 `data.url`（站内媒体相对地址），
+    /// 客户端需要再对这一地址发起普通 GET。
+    func resolveAudioURL(musicId: Int, quality: String = "hq") async throws -> URL {
+        let data = try await network.rawGet(url: APIConfig.musicFileURL(id: musicId, quality: quality))
+        guard
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let success = json["success"] as? Bool, success,
+            let payload = json["data"] as? [String: Any],
+            let path = payload["url"] as? String,
+            let url = URL(string: APIConfig.buildFullURL(path: path))
+        else {
+            throw NetworkError.serverError(NetworkService.message(from: data) ?? "无法获取播放地址")
+        }
+        return url
+    }
+
     // MARK: - Parse Response
-    
-    private func parseMusicsFromResponse(data: Data, errorHint: String, dataKey: String) throws -> [Music] {
+
+    private func parseMusicList(data: Data, dataKey: String, errorHint: String, allowEmpty: Bool = false) throws -> [Music] {
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            // Maybe it's a direct array
             if let array = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
                 return Music.fromJSONArray(array)
             }
             throw NetworkError.serverError(errorHint)
         }
-        
-        // Check success
+
         let isSuccess: Bool
         if let b = json["success"] as? Bool {
             isSuccess = b
@@ -68,115 +97,32 @@ class MusicService {
         } else {
             isSuccess = true
         }
-        
+
         if !isSuccess {
+            if allowEmpty { return [] }
             let message = json["message"] as? String ?? errorHint
             throw NetworkError.serverError(message)
         }
-        
-        // Try the specified data key first, then alternative keys
+
         let musicArray: [[String: Any]]?
         if let arr = json[dataKey] as? [[String: Any]] {
             musicArray = arr
         } else if dataKey != "data", let arr = json["data"] as? [[String: Any]] {
             musicArray = arr
-        } else if dataKey != "results", let arr = json["results"] as? [[String: Any]] {
-            musicArray = arr
         } else {
             musicArray = nil
         }
-        
-        guard let array = musicArray else {
-            return []
-        }
-        
+
+        guard let array = musicArray else { return [] }
         return Music.fromJSONArray(array)
     }
-    
-    // MARK: - Lyrics
-    
-    func getLyrics(musicId: Int) async throws -> String {
-        let url = APIConfig.musicLyricsURL(id: musicId)
-        guard let requestURL = URL(string: url) else {
-            throw NetworkError.invalidURL
-        }
-        
-        let (data, _) = try await URLSession.shared.data(from: requestURL)
-        
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            return ""
-        }
-        
-        let success = json["success"] as? Bool ?? false
-        if success, let lyricsData = json["data"] as? String {
-            return lyricsData
-        }
-        return ""
-    }
-    
-    // MARK: - Daily Recommendations
-    
-    func getDailyRecommendations(token: String) async throws -> [Music] {
-        let url = APIConfig.dailyRecommendationsURL()
-        guard let requestURL = URL(string: url) else {
-            throw NetworkError.invalidURL
-        }
-        
-        var request = URLRequest(url: requestURL)
-        request.setValue(token, forHTTPHeaderField: "Authorization")
-        
-        let (data, _) = try await URLSession.shared.data(for: request)
-        
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let success = json["success"] as? Bool, success,
-              let dataArray = json["data"] as? [[String: Any]] else {
-            return []
-        }
-        
-        return dataArray.compactMap { item in
-            guard let musicId = item["musicId"] as? Int else { return nil }
-            return Music(
-                id: musicId,
-                title: item["title"] as? String ?? "未知歌曲",
-                artist: item["artist"] as? String ?? "未知歌手",
-                album: item["album"] as? String ?? "",
-                duration: 0,
-                filePath: nil,
-                coverFilePath: nil,
-                uploadUserId: nil,
-                createdAt: nil,
-                playCount: nil,
-                lrc: nil
-            )
-        }
-    }
-    
-    // MARK: - Music Info
-    
-    func getMusicInfo(id: Int) async throws -> Music {
-        let url = APIConfig.musicInfoURL(id: id)
-        guard let requestURL = URL(string: url) else {
-            throw NetworkError.invalidURL
-        }
-        
-        let (data, _) = try await URLSession.shared.data(from: requestURL)
-        
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let success = json["success"] as? Bool, success,
-              let musicData = json["data"] as? [String: Any],
-              let music = Music.fromJSON(musicData) else {
-            throw NetworkError.serverError("获取音乐信息失败")
-        }
-        
-        return music
-    }
-    
+
     // MARK: - URLs
-    
+
     func getMusicFileURL(musicId: Int) -> URL? {
         URL(string: APIConfig.musicFileURL(id: musicId))
     }
-    
+
     func getMusicCoverURL(music: Music) -> URL? {
         let urlString = APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath)
         return URL(string: urlString)

@@ -12,7 +12,7 @@ struct ProfileView: View {
                 Section {
                     if authService.isLoggedIn, let user = authService.currentUser {
                         HStack(spacing: 16) {
-                            AsyncImage(url: URL(string: APIConfig.userAvatarURL(id: user.id))) { image in
+                            RemoteImage(url: APIConfig.userAvatarURL(id: user.id)) { image in
                                 image.resizable().aspectRatio(contentMode: .fill)
                             } placeholder: {
                                 Circle()
@@ -173,7 +173,7 @@ struct SettingsView: View {
                 HStack {
                     Text("版本")
                     Spacer()
-                    Text("1.0.0")
+                    Text("1.0.1")
                         .foregroundColor(.secondary)
                 }
             } header: {
@@ -254,7 +254,7 @@ struct AboutView: View {
                         .font(.title)
                         .fontWeight(.bold)
                     
-                    Text("版本 1.0.0")
+                    Text("版本 1.0.1")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     

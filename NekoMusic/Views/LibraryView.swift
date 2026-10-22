@@ -168,7 +168,7 @@ struct FavoritesView: View {
                     
                     ForEach(favorites) { fav in
                         HStack(spacing: 12) {
-                            AsyncImage(url: URL(string: APIConfig.buildMusicCoverURL(musicId: fav.id, coverFilePath: fav.cover))) { image in
+                            RemoteImage(url: APIConfig.buildMusicCoverURL(musicId: fav.id, coverFilePath: fav.cover)) { image in
                                 image.resizable().aspectRatio(contentMode: .fill)
                             } placeholder: {
                                 RoundedRectangle(cornerRadius: 6)

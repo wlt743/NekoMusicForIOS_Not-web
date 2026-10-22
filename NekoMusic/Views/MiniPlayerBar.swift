@@ -8,7 +8,7 @@ struct MiniPlayerBar: View {
         HStack(spacing: 12) {
             // Cover
             if let music = playerService.currentMusic {
-                AsyncImage(url: URL(string: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath))) { image in
+                RemoteImage(url: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath)) { image in
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)

@@ -36,6 +36,7 @@ NekoMusic iOS 是一个轻量、原生、无广告的音乐播放器客户端。
 | 最低版本 | iOS 16.0 |
 | 依赖 | 无（不依赖 CocoaPods / SPM） |
 | 构建 | Xcode 15+，fastlane 可选 |
+| 当前版本 | 1.0.1（[更新日志](CHANGELOG.md)） |
 
 ---
 

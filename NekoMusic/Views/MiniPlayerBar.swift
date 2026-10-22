@@ -116,5 +116,9 @@ struct MiniPlayerAccessory: View {
             .buttonStyle(.borderless)
         }
         .padding(.horizontal, 6)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            showNowPlaying = true
+        }
     }
 }

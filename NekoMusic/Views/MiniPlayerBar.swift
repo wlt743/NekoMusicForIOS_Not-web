@@ -80,11 +80,11 @@ struct MiniPlayerAccessory: View {
                 if let music = playerService.currentMusic {
                     CoverImage(
                         url: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath),
-                        size: 38,
-                        cornerRadius: 9
+                        size: 40,
+                        cornerRadius: 10
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
                             .strokeBorder(Color.white.opacity(0.18), lineWidth: 0.5)
                     )
                     .shadow(color: .black.opacity(0.15), radius: 3, x: 0, y: 1)
@@ -126,10 +126,9 @@ struct MiniPlayerAccessory: View {
                 .progressViewStyle(.linear)
                 .tint(.accentColor)
                 .frame(height: 3)
-                .padding(.horizontal, 10)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 2)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 7)
         .contentShape(Rectangle())
         .onTapGesture {
             showNowPlaying = true

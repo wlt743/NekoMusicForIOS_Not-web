@@ -33,11 +33,13 @@ struct PlaylistMusic: Codable, Identifiable {
     let album: String
     let duration: Int
     let coverPath: String?
-    let filePath: String
-    let fileFormat: String
-    let language: String
-    let position: Int
-    let addedAt: String
+    /// 文档里的音乐列表不保证返回直链，缺省时按 musicId 走 `/api/music/file/{id}`
+    let filePath: String?
+    let fileFormat: String?
+    let language: String?
+    let position: Int?
+    let addedAt: String?
+    let maxQuality: String?
 }
 
 struct PlaylistListResponse: Codable {

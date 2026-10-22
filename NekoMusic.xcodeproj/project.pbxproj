@@ -35,6 +35,13 @@
 		B1000026 /* SliderCaptchaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000027 /* SliderCaptchaView.swift */; };
 		B1000027 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000028 /* DesignSystem.swift */; };
 		B1000028 /* LyricsParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000029 /* LyricsParser.swift */; };
+		B1000030 /* CommentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000030 /* CommentService.swift */; };
+		B1000031 /* CommentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000031 /* CommentsView.swift */; };
+		B1000032 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000032 /* NotificationService.swift */; };
+		B1000033 /* NotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000033 /* NotificationsView.swift */; };
+		B1000034 /* VipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000034 /* VipView.swift */; };
+		B1000035 /* MusicUploadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000035 /* MusicUploadService.swift */; };
+		B1000036 /* MusicUploadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000036 /* MusicUploadView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -68,6 +75,13 @@
 		B2000026 /* RemoteImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteImageView.swift; sourceTree = "<group>"; };
 		B2000024 /* PlaylistImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistImportView.swift; sourceTree = "<group>"; };
 		B2000099 /* NekoMusic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NekoMusic.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2000030 /* CommentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentService.swift; sourceTree = "<group>"; };
+		B2000031 /* CommentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsView.swift; sourceTree = "<group>"; };
+		B2000032 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		B2000033 /* NotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsView.swift; sourceTree = "<group>"; };
+		B2000034 /* VipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VipView.swift; sourceTree = "<group>"; };
+		B2000035 /* MusicUploadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicUploadService.swift; sourceTree = "<group>"; };
+		B2000036 /* MusicUploadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicUploadView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +138,9 @@
 				B2000011 /* AudioPlayerService.swift */,
 				B2000023 /* PlaylistImportService.swift */,
 				B2000025 /* NonceService.swift */,
+				B2000030 /* CommentService.swift */,
+				B2000032 /* NotificationService.swift */,
+				B2000035 /* MusicUploadService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -145,6 +162,10 @@
 				B2000027 /* SliderCaptchaView.swift */,
 				B2000028 /* DesignSystem.swift */,
 				B2000029 /* LyricsParser.swift */,
+				B2000031 /* CommentsView.swift */,
+				B2000033 /* NotificationsView.swift */,
+				B2000034 /* VipView.swift */,
+				B2000036 /* MusicUploadView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -254,6 +275,13 @@
 				B1000026 /* SliderCaptchaView.swift in Sources */,
 				B1000027 /* DesignSystem.swift in Sources */,
 				B1000028 /* LyricsParser.swift in Sources */,
+				B1000030 /* CommentService.swift in Sources */,
+				B1000031 /* CommentsView.swift in Sources */,
+				B1000032 /* NotificationService.swift in Sources */,
+				B1000033 /* NotificationsView.swift in Sources */,
+				B1000034 /* VipView.swift in Sources */,
+				B1000035 /* MusicUploadService.swift in Sources */,
+				B1000036 /* MusicUploadView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

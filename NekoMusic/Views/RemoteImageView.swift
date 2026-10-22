@@ -71,4 +71,13 @@ final class RemoteImageCache {
     func store(_ image: UIImage, for key: String) {
         cache.setObject(image, forKey: key as NSString)
     }
+
+    func clear() {
+        cache.removeAllObjects()
+    }
+}
+
+extension Notification.Name {
+    /// 头像已更新，头像视图需要换一个 URL 重新拉取
+    static let avatarDidChange = Notification.Name("NekoMusic.avatarDidChange")
 }

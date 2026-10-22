@@ -84,7 +84,23 @@ enum APIConfig {
     static func sendResetCodeURL() -> String { "\(baseURL)/api/user/send-reset-code" }
     static func resetPasswordURL() -> String { "\(baseURL)/api/user/reset-password" }
     static func changePasswordURL() -> String { "\(baseURL)/api/user/password/change" }
+    static func changeNicknameURL() -> String { "\(baseURL)/api/user/nickname/change" }
+    static func notificationsURL(since: Int?, before: Int?, limit: Int) -> String {
+        var items = [URLQueryItem(name: "limit", value: String(limit))]
+        if let since = since { items.append(URLQueryItem(name: "since", value: String(since))) }
+        if let before = before { items.append(URLQueryItem(name: "before", value: String(before))) }
+        var components = URLComponents(string: "\(baseURL)/api/user/notifications")
+        components?.queryItems = items
+        return components?.url?.absoluteString ?? "\(baseURL)/api/user/notifications"
+    }
+    static func notificationsReadURL() -> String { "\(baseURL)/api/user/notifications/read" }
     static func userAvatarURL(id: Int) -> String { "\(baseURL)/api/user/avatar/\(id)" }
+    static func avatarUploadURL() -> String { "\(baseURL)/api/user/avatar/upload" }
+    static func musicUploadURL() -> String { "\(baseURL)/api/user/upload" }
+
+    // MARK: - VIP
+    static func vipPricingURL() -> String { "\(baseURL)/api/vip/pricing" }
+    static func vipPayCreateURL() -> String { "\(baseURL)/api/vip/pay/create" }
     static func dailyRecommendationsURL() -> String { "\(baseURL)/api/user/recommendations/daily" }
 
     // MARK: - Favorite APIs
@@ -100,6 +116,17 @@ enum APIConfig {
     static func playlistDetailURL(id: Int) -> String { "\(baseURL)/api/playlist/\(id)" }
     static func playlistAddMusicURL() -> String { "\(baseURL)/api/user/playlist/music/add" }
     static func playlistRemoveMusicURL() -> String { "\(baseURL)/api/user/playlist/music/remove" }
+
+    // MARK: - Comments API
+    static func commentsURL(musicId: Int, page: Int = 1, pageSize: Int = 20) -> String {
+        "\(baseURL)/api/comments?musicId=\(musicId)&page=\(page)&pageSize=\(pageSize)"
+    }
+    static func deleteCommentURL(id: Int) -> String {
+        "\(baseURL)/api/comments?id=\(id)"
+    }
+
+    // MARK: - 外部歌单导入（/loser/*，白名单内，无需 nonce）
+    static func pullURL(path: String) -> String { "\(baseURL)/loser/\(path)" }
 
     // MARK: - Helpers
     static func buildFullURL(path: String) -> String {

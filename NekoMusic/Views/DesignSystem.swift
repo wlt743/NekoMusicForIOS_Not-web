@@ -23,6 +23,59 @@ extension View {
     }
 }
 
+/// 后端时间统一是东八区墙钟时间 `yyyy-MM-dd HH:mm:ss`
+enum NekoDate {
+    private static let parser: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "Asia/Shanghai")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter
+    }()
+
+    private static let display: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.timeZone = TimeZone(identifier: "Asia/Shanghai")
+        formatter.dateFormat = "MM-dd HH:mm"
+        return formatter
+    }()
+
+    private static let dayOnly: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.timeZone = TimeZone(identifier: "Asia/Shanghai")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
+    static func format(_ text: String) -> String {
+        guard let date = parser.date(from: text) else { return text }
+        return display.string(from: date)
+    }
+
+    /// 当天只显示时分，更早显示月-日，跨年显示完整日期
+    static func friendly(_ text: String) -> String {
+        guard let date = parser.date(from: text) else { return text }
+        let calendar = Calendar(identifier: .gregorian)
+        if calendar.isDateInToday(date) {
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "zh_CN")
+            formatter.timeZone = TimeZone(identifier: "Asia/Shanghai")
+            formatter.dateFormat = "HH:mm"
+            return formatter.string(from: date)
+        }
+        if dayOnly.string(from: date).hasPrefix(String(dayOnly.string(from: Date()).prefix(4))) {
+            return display.string(from: date)
+        }
+        let full = DateFormatter()
+        full.locale = Locale(identifier: "zh_CN")
+        full.timeZone = TimeZone(identifier: "Asia/Shanghai")
+        full.dateFormat = "yyyy-MM-dd"
+        return full.string(from: date)
+    }
+}
+
 /// 列表分区标题，使用系统字体层级。
 struct SectionHeader: View {
     let title: String

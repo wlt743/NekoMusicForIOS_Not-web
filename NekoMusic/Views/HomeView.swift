@@ -2,7 +2,9 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject var playerService: AudioPlayerService
+    @EnvironmentObject var authService: AuthService
 
+    @State private var dailyMusic: [Music] = []
     @State private var rankingMusic: [Music] = []
     @State private var latestMusic: [Music] = []
     @State private var isLoading = true
@@ -35,11 +37,37 @@ struct HomeView: View {
                     await loadData()
                 }
             }
+            .onChange(of: authService.isLoggedIn) { _ in
+                Task { await loadData() }
+            }
         }
     }
 
     private var content: some View {
         List {
+            if !dailyMusic.isEmpty {
+                Section {
+                    ForEach(dailyMusic.prefix(6)) { music in
+                        Button {
+                            play(dailyMusic, music)
+                        } label: {
+                            MusicRow(
+                                music: music,
+                                isCurrent: playerService.currentMusic?.id == music.id,
+                                isPlaying: playerService.isPlaying
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                } header: {
+                    sectionHeader(
+                        "每日推荐",
+                        systemImage: "sparkles",
+                        destination: MusicListView(title: "每日推荐", musics: dailyMusic)
+                    )
+                }
+            }
+
             if !rankingMusic.isEmpty {
                 Section {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -115,12 +143,14 @@ struct HomeView: View {
         do {
             async let ranking = MusicService.shared.getRanking()
             async let latest = MusicService.shared.getLatest()
+            async let daily = Self.fetchDailyRecommendations(token: authService.token)
 
-            let (rankingResult, latestResult) = try await (ranking, latest)
+            let (rankingResult, latestResult, dailyResult) = try await (ranking, latest, daily)
 
             await MainActor.run {
                 self.rankingMusic = rankingResult
                 self.latestMusic = latestResult
+                self.dailyMusic = dailyResult
                 self.isLoading = false
             }
         } catch {
@@ -129,6 +159,12 @@ struct HomeView: View {
                 self.isLoading = false
             }
         }
+    }
+
+    /// 每日推荐失败不影响首页其它区块
+    private static func fetchDailyRecommendations(token: String?) async -> [Music] {
+        guard let token = token, !token.isEmpty else { return [] }
+        return (try? await MusicService.shared.getDailyRecommendations(token: token)) ?? []
     }
 }
 

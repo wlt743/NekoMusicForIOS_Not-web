@@ -87,6 +87,101 @@ class NetworkService {
         return try await send(url: url, method: "POST", body: body, token: token)
     }
 
+    struct MultipartField {
+        let name: String
+        var value: String?
+        var filename: String?
+        var mimeType: String?
+        var data: Data?
+
+        init(_ name: String, value: String? = nil, filename: String? = nil, mimeType: String? = nil, data: Data? = nil) {
+            self.name = name
+            self.value = value
+            self.filename = filename
+            self.mimeType = mimeType
+            self.data = data
+        }
+    }
+
+    /// 单文件上传（头像）
+    func uploadMultipart(
+        url: String,
+        fieldName: String,
+        filename: String,
+        mimeType: String,
+        fileData: Data,
+        token: String? = nil
+    ) async throws -> Data {
+        try await uploadForm(
+            url: url,
+            fields: [MultipartField(fieldName, filename: filename, mimeType: mimeType, data: fileData)],
+            token: token
+        )
+    }
+
+    /// 通用 multipart/form-data 上传（头像、用户上传音乐）
+    func uploadForm(url: String, fields: [MultipartField], token: String? = nil) async throws -> Data {
+        guard let requestURL = URL(string: url) else { throw NetworkError.invalidURL }
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var body = Data()
+
+        func append(_ text: String) {
+            body.append(Data(text.utf8))
+        }
+
+        for field in fields {
+            append("--\(boundary)\r\n")
+            if let filename = field.filename {
+                append("Content-Disposition: form-data; name=\"\(field.name)\"; filename=\"\(filename)\"\r\n")
+                append("Content-Type: \(field.mimeType ?? "application/octet-stream")\r\n\r\n")
+                body.append(field.data ?? Data())
+                append("\r\n")
+            } else {
+                append("Content-Disposition: form-data; name=\"\(field.name)\"\r\n\r\n")
+                append(field.value ?? "")
+                append("\r\n")
+            }
+        }
+        append("--\(boundary)--\r\n")
+
+        for attempt in 0...1 {
+            var request = URLRequest(url: requestURL)
+            request.httpMethod = "POST"
+            request.timeoutInterval = 300
+            for (key, value) in APIConfig.clientHeaders {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+            request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+            if let token = token {
+                request.setValue(token, forHTTPHeaderField: "Authorization")
+            }
+            request.httpBody = body
+
+            if APIConfig.requiresNonce(path: requestURL.path) {
+                let nonce = try await NonceService.shared.nextNonce(forWrite: true)
+                request.setValue(nonce, forHTTPHeaderField: "X-Neko-Nonce")
+            }
+
+            let (data, response) = try await session.data(for: request)
+            guard let http = response as? HTTPURLResponse else { throw NetworkError.noData }
+
+            if http.statusCode == 409 && attempt == 0 { continue }
+            if http.statusCode == 409 {
+                throw NetworkError.serverError("请求被服务端拒绝，请关闭代理 / VPN 后重试")
+            }
+            if http.statusCode == 401 { throw NetworkError.unauthorized }
+            if !(200...299).contains(http.statusCode) {
+                let msg = Self.message(from: data) ?? "上传失败（\(http.statusCode)）"
+                NSLog("[NekoAPI] POST %@ -> %d %@", url, http.statusCode, msg)
+                throw NetworkError.serverError(msg)
+            }
+            return data
+        }
+
+        throw NetworkError.serverBusy
+    }
+
     // MARK: - Core
 
     private func send(url: String, method: String, body: Data?, token: String?) async throws -> Data {
@@ -131,6 +226,10 @@ class NetworkService {
             if httpResponse.statusCode == 409 && attempt == 0 {
                 continue
             }
+            if httpResponse.statusCode == 409 {
+                // 重试后仍被拒：多半是网络环境不合法（境外代理、来源异常）
+                throw NetworkError.serverError("请求被服务端拒绝，请关闭代理 / VPN 后重试")
+            }
             if httpResponse.statusCode == 429 || httpResponse.statusCode == 503 {
                 throw NetworkError.serverBusy
             }
@@ -160,6 +259,10 @@ class NetworkService {
         }
         if let message = json["message"] as? String, !message.isEmpty {
             return message
+        }
+        // `/loser/*` 等接口的错误文案放在 msg 里
+        if let msg = json["msg"] as? String, !msg.isEmpty {
+            return msg
         }
         if let error = json["error"] as? String, !error.isEmpty {
             return error

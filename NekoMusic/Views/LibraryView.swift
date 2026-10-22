@@ -7,6 +7,7 @@ struct LibraryView: View {
     @State private var favorites: [FavoriteMusic] = []
     @State private var showLogin = false
     @State private var showImport = false
+    @State private var showUpload = false
 
     var body: some View {
         NavigationStack {
@@ -44,10 +45,16 @@ struct LibraryView: View {
                             } label: {
                                 Label("导入外部歌单", systemImage: "square.and.arrow.down")
                             }
+
+                            Button {
+                                showUpload = true
+                            } label: {
+                                Label("上传音乐", systemImage: "arrow.up.circle")
+                            }
                         } header: {
-                            Text("导入")
+                            Text("导入与上传")
                         } footer: {
-                            Text("支持从网易云音乐、QQ 音乐导入歌单")
+                            Text("歌单支持网易云、QQ、酷狗、汽水；音乐上传后需要管理员审核")
                         }
 
                         if !playerService.playlist.isEmpty {
@@ -80,6 +87,10 @@ struct LibraryView: View {
         }
         .sheet(isPresented: $showImport) {
             PlaylistImportView()
+                .environmentObject(authService)
+        }
+        .sheet(isPresented: $showUpload) {
+            MusicUploadView()
                 .environmentObject(authService)
         }
         .task {
@@ -201,6 +212,9 @@ struct PlaylistsView: View {
     @State private var isLoading = true
     @State private var showCreateAlert = false
     @State private var newPlaylistName = ""
+    @State private var isCreating = false
+    @State private var errorMessage = ""
+    @State private var showError = false
 
     var body: some View {
         Group {
@@ -256,11 +270,28 @@ struct PlaylistsView: View {
             Button("取消", role: .cancel) {
                 newPlaylistName = ""
             }
+        } message: {
+            Text("最多 255 个字符")
+        }
+        .alert("操作失败", isPresented: $showError) {
+            Button("确定") {}
+        } message: {
+            Text(errorMessage)
+        }
+        .overlay {
+            if isCreating {
+                ProgressView("创建中…")
+                    .padding(20)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
         }
         .task {
             if playlists.isEmpty {
                 await loadPlaylists()
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .playlistsDidChange)) { _ in
+            Task { await loadPlaylists() }
         }
     }
 
@@ -282,27 +313,51 @@ struct PlaylistsView: View {
         } catch {
             await MainActor.run {
                 self.isLoading = false
+                self.errorMessage = error.localizedDescription
+                self.showError = true
             }
         }
     }
 
     private func createPlaylist() async {
-        guard let token = authService.token, !newPlaylistName.isEmpty else { return }
+        guard let token = authService.token else {
+            errorMessage = "请先登录"
+            showError = true
+            return
+        }
+
+        let name = newPlaylistName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else {
+            errorMessage = "歌单名称不能为空"
+            showError = true
+            return
+        }
 
         struct CreateRequest: Codable {
             let name: String
         }
 
+        isCreating = true
+        defer { isCreating = false }
+
         do {
-            let _: PlaylistResponse = try await NetworkService.shared.post(
+            let response: PlaylistResponse = try await NetworkService.shared.post(
                 url: APIConfig.playlistCreateURL(),
-                body: CreateRequest(name: newPlaylistName),
+                body: CreateRequest(name: name),
                 token: token
             )
+
+            guard response.success else {
+                errorMessage = response.message ?? "创建失败"
+                showError = true
+                return
+            }
+
             newPlaylistName = ""
             await loadPlaylists()
         } catch {
-            print("Create playlist error: \(error)")
+            errorMessage = error.localizedDescription
+            showError = true
         }
     }
 }

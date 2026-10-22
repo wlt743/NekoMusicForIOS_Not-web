@@ -16,6 +16,7 @@ struct LoginView: View {
     @State private var errorMessage: String?
     @State private var showError = false
     @State private var showCodeSent = false
+    @State private var showForgotPassword = false
 
     var body: some View {
         NavigationStack {
@@ -106,6 +107,17 @@ struct LoginView: View {
                     .disabled(isLoading)
                     .listRowBackground(Color.clear)
                 }
+
+                if isLoginMode {
+                    Section {
+                        Button("忘记密码？") {
+                            showForgotPassword = true
+                        }
+                        .frame(maxWidth: .infinity)
+                    } footer: {
+                        Text("通过注册邮箱接收验证码重置密码")
+                    }
+                }
             }
             .navigationTitle(isLoginMode ? "登录" : "注册")
             .navigationBarTitleDisplayMode(.inline)
@@ -136,6 +148,10 @@ struct LoginView: View {
                 Button("确定") {}
             } message: {
                 Text("请查收邮箱并填写 6 位验证码")
+            }
+            .sheet(isPresented: $showForgotPassword) {
+                ForgotPasswordView()
+                    .environmentObject(authService)
             }
         }
     }
@@ -249,5 +265,163 @@ struct LoginView: View {
     private func show(message: String) {
         errorMessage = message
         showError = true
+    }
+}
+
+// MARK: - 找回密码
+
+struct ForgotPasswordView: View {
+    @EnvironmentObject var authService: AuthService
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var email = ""
+    @State private var code = ""
+    @State private var newPassword = ""
+    @State private var confirmPassword = ""
+    @State private var isSending = false
+    @State private var isSubmitting = false
+    @State private var message = ""
+    @State private var showMessage = false
+    @State private var succeeded = false
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("注册邮箱", text: $email)
+                        .textContentType(.emailAddress)
+                        .keyboardType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                } header: {
+                    Text("邮箱")
+                } footer: {
+                    Text("重置密码的验证码会发送到这个邮箱，无需滑块验证")
+                }
+
+                Section {
+                    HStack {
+                        TextField("邮箱验证码", text: $code)
+                            .keyboardType(.numberPad)
+
+                        Button {
+                            Task { await sendCode() }
+                        } label: {
+                            if isSending {
+                                ProgressView()
+                            } else {
+                                Text("发送验证码")
+                            }
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(isSending || email.isEmpty)
+                    }
+
+                    SecureField("新密码", text: $newPassword)
+                        .textContentType(.newPassword)
+
+                    SecureField("确认新密码", text: $confirmPassword)
+                        .textContentType(.newPassword)
+                } footer: {
+                    Text("新密码至少 6 位")
+                }
+
+                Section {
+                    Button {
+                        Task { await submit() }
+                    } label: {
+                        HStack {
+                            Spacer()
+                            if isSubmitting {
+                                ProgressView()
+                            } else {
+                                Text("重置密码")
+                                    .fontWeight(.semibold)
+                            }
+                            Spacer()
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(isSubmitting)
+                    .listRowBackground(Color.clear)
+                }
+            }
+            .navigationTitle("找回密码")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("关闭") { dismiss() }
+                }
+            }
+            .alert(succeeded ? "密码已重置" : "提示", isPresented: $showMessage) {
+                if succeeded {
+                    Button("去登录") { dismiss() }
+                } else {
+                    Button("确定") {}
+                }
+            } message: {
+                Text(message)
+            }
+        }
+    }
+
+    private func sendCode() async {
+        guard email.contains("@") else {
+            message = "请输入正确的邮箱"
+            showMessage = true
+            return
+        }
+        isSending = true
+        defer { isSending = false }
+
+        do {
+            let response = try await authService.sendResetCode(email: email)
+            message = response.success ? "验证码已发送，请查收邮箱" : response.message
+            showMessage = true
+        } catch {
+            message = error.localizedDescription
+            showMessage = true
+        }
+    }
+
+    private func submit() async {
+        guard email.contains("@") else {
+            message = "请输入正确的邮箱"
+            showMessage = true
+            return
+        }
+        guard !code.isEmpty else {
+            message = "请填写邮箱验证码"
+            showMessage = true
+            return
+        }
+        guard newPassword.count >= 6 else {
+            message = "新密码至少 6 位"
+            showMessage = true
+            return
+        }
+        guard newPassword == confirmPassword else {
+            message = "两次输入的新密码不一致"
+            showMessage = true
+            return
+        }
+
+        isSubmitting = true
+        defer { isSubmitting = false }
+
+        do {
+            let response = try await authService.resetPassword(
+                email: email,
+                code: code,
+                newPassword: newPassword
+            )
+            succeeded = response.success
+            message = response.success ? "密码已重置，请使用新密码登录" : response.message
+            showMessage = true
+        } catch {
+            message = error.localizedDescription
+            showMessage = true
+        }
     }
 }

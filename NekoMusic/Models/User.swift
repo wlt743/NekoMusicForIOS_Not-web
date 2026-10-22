@@ -112,6 +112,72 @@ struct ResetPasswordResponse: Codable {
     let message: String
 }
 
+// MARK: - 昵称
+
+struct NicknameChangeData: Codable {
+    let nickname: String
+}
+
+struct NicknameChangeResponse: Codable {
+    let success: Bool
+    let message: String
+    let data: NicknameChangeData?
+}
+
+// MARK: - 头像
+
+struct AvatarUploadResponse: Codable {
+    let success: Bool?
+    let message: String?
+    let avatarPath: String?
+    let error: String?
+
+    var isOK: Bool { success == true }
+}
+
+// MARK: - VIP
+
+struct VipPlan: Codable, Identifiable {
+    let id: Int
+    let months: Int
+    let days: Int
+    let priceYuan: Double
+    let sortOrder: Int?
+    let updatedAt: String?
+
+    var durationText: String {
+        var parts: [String] = []
+        if months > 0 { parts.append("\(months) 个月") }
+        if days > 0 { parts.append("\(days) 天") }
+        return parts.isEmpty ? "会员" : parts.joined(separator: " + ")
+    }
+
+    var priceText: String { String(format: "¥%.2f", priceYuan) }
+}
+
+struct VipPricingResponse: Codable {
+    let success: Bool
+    let message: String?
+    let data: [VipPlan]?
+}
+
+struct VipPayRequest: Codable {
+    let pricingId: Int
+    let payType: String
+}
+
+struct VipPayData: Codable {
+    let outTradeNo: String?
+    let payurl: String?
+    let qrcode: String?
+}
+
+struct VipPayResponse: Codable {
+    let success: Bool
+    let message: String?
+    let data: VipPayData?
+}
+
 // MARK: - 滑块人机验证
 
 struct SliderCaptcha {

@@ -38,6 +38,39 @@ class MusicService {
         return try parseMusicList(data: data, dataKey: "data", errorHint: "获取最新音乐失败")
     }
 
+    // MARK: - 每日推荐
+
+    /// 服务端按用户收藏风格返回的当日推荐（东八区 00:00 更新，不含已收藏曲目）。
+    /// 返回项只有 `musicId` 等元数据，没有 `id` 字段，需要手工映射。
+    func getDailyRecommendations(token: String) async throws -> [Music] {
+        let data = try await network.rawGet(url: APIConfig.dailyRecommendationsURL(), token: token)
+
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw NetworkError.serverError("获取每日推荐失败")
+        }
+        if let success = json["success"] as? Bool, !success {
+            throw NetworkError.serverError(json["message"] as? String ?? "获取每日推荐失败")
+        }
+        guard let list = json["data"] as? [[String: Any]] else { return [] }
+
+        return list.compactMap { item in
+            guard let musicId = item["musicId"] as? Int else { return nil }
+            return Music(
+                id: musicId,
+                title: item["title"] as? String ?? "未知歌曲",
+                artist: item["artist"] as? String ?? "未知歌手",
+                album: item["album"] as? String ?? "",
+                duration: 0,
+                filePath: nil,
+                coverFilePath: item["cover"] as? String,
+                uploadUserId: nil,
+                createdAt: nil,
+                playCount: nil,
+                lrc: nil
+            )
+        }
+    }
+
     // MARK: - Music Info / Lyrics
 
     func getMusicInfo(id: Int) async throws -> MusicInfo {

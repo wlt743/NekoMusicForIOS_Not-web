@@ -5,6 +5,7 @@ struct NowPlayingView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var showLyrics = false
+    @State private var showComments = false
 
     var body: some View {
         NavigationStack {
@@ -38,6 +39,16 @@ struct NowPlayingView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
+                        showComments = true
+                    } label: {
+                        Image(systemName: "bubble.left.and.bubble.right")
+                    }
+                    .disabled(playerService.currentMusic == nil)
+                    .accessibilityLabel("评论")
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
                         showLyrics.toggle()
                     } label: {
                         Image(systemName: showLyrics ? "text.bubble.fill" : "text.bubble")
@@ -56,6 +67,11 @@ struct NowPlayingView: View {
             }
             .overlay(alignment: .leading) {
                 edgeSwipeArea
+            }
+        }
+        .sheet(isPresented: $showComments) {
+            if let music = playerService.currentMusic {
+                CommentsView(music: music)
             }
         }
     }

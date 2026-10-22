@@ -170,4 +170,68 @@ class AuthService: ObservableObject {
         )
         return response
     }
+
+    // MARK: - 昵称
+
+    /// 上传头像。图片已在上层压缩，这里只负责 multipart 组包。
+    func uploadAvatar(_ data: Data, filename: String = "avatar.jpg", mimeType: String = "image/jpeg") async throws -> AvatarUploadResponse {
+        guard let token = token else {
+            throw NetworkError.unauthorized
+        }
+
+        let raw = try await network.uploadMultipart(
+            url: APIConfig.avatarUploadURL(),
+            fieldName: "avatar",
+            filename: filename,
+            mimeType: mimeType,
+            fileData: data,
+            token: "Bearer \(token)"
+        )
+
+        if let response = try? JSONDecoder().decode(AvatarUploadResponse.self, from: raw) {
+            return response
+        }
+        throw NetworkError.serverError(NetworkService.message(from: raw) ?? "头像上传失败")
+    }
+
+    func changeNickname(_ nickname: String) async throws -> NicknameChangeResponse {
+        guard let token = token else {
+            throw NetworkError.unauthorized
+        }
+
+        struct Request: Codable {
+            let nickname: String
+        }
+
+        let response: NicknameChangeResponse = try await network.post(
+            url: APIConfig.changeNicknameURL(),
+            body: Request(nickname: nickname),
+            token: "Bearer \(token)"
+        )
+
+        if response.success {
+            await MainActor.run {
+                updateLocalNickname(response.data?.nickname ?? nickname)
+            }
+        }
+        return response
+    }
+
+    /// 昵称修改后同步本地缓存，避免重启后又变回去
+    @MainActor
+    private func updateLocalNickname(_ nickname: String) {
+        guard let user = currentUser else { return }
+        let updated = UserData(
+            id: user.id,
+            nickname: nickname,
+            email: user.email,
+            createdAt: user.createdAt,
+            isVip: user.isVip,
+            vipExpiresAt: user.vipExpiresAt
+        )
+        currentUser = updated
+        if let data = try? JSONEncoder().encode(updated) {
+            UserDefaults.standard.set(data, forKey: userKey)
+        }
+    }
 }

@@ -32,6 +32,13 @@ struct ContentView: View {
                 NowPlayingView()
                     .environmentObject(playerService)
             }
+        .task(id: authService.isLoggedIn) {
+            if authService.isLoggedIn, let token = authService.token {
+                NotificationService.shared.startStream(token: token)
+            } else {
+                NotificationService.shared.stopStream()
+            }
+        }
     }
 
     private var tabs: some View {

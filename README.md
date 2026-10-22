@@ -1,5 +1,7 @@
 # NekoMusic iOS
 
+<img src="docs/images/nekomusic-iphone.jpg" alt="NekoMusic iOS" width="720">
+
 > 为 NekoMusic 准备好你的 iPhone。
 
 NekoMusic 的 iOS 原生客户端，使用 SwiftUI 重写，对接自建的 NekoMusic 曲库服务。
@@ -34,12 +36,6 @@ NekoMusic iOS 是一个轻量、原生、无广告的音乐播放器客户端。
 | 最低版本 | iOS 16.0 |
 | 依赖 | 无（不依赖 CocoaPods / SPM） |
 | 构建 | Xcode 15+，fastlane 可选 |
-
-## 界面预览
-
-<img src="docs/images/nekomusic-iphone.jpg" alt="NekoMusic iOS 播放界面" width="720">
-
-> 界面仅供参考，以实际体验为准。
 
 ---
 

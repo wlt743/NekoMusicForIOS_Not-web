@@ -10,12 +10,12 @@ struct User: Codable, Identifiable {
 }
 
 struct LoginRequest: Codable {
-    let username: String
+    let email: String
     let password: String
 }
 
 struct RegisterRequest: Codable {
-    let username: String
+    let nickname: String
     let password: String
     let email: String
     let verificationCode: String
@@ -32,13 +32,52 @@ struct LoginData: Codable {
     let token: String
 }
 
+/// 新后端的用户对象字段是 `nickname`；旧数据里是 `username`。
+/// 这里兼容两种键名，同时保留 `username` 作为展示用的别名。
 struct UserData: Codable {
     let id: Int
-    let username: String
+    let nickname: String
     let email: String
     let createdAt: String
     let isVip: Bool?
     let vipExpiresAt: String?
+
+    var username: String { nickname }
+
+    enum CodingKeys: String, CodingKey {
+        case id, nickname, username, email, createdAt, isVip, vipExpiresAt
+    }
+
+    init(id: Int, nickname: String, email: String, createdAt: String, isVip: Bool?, vipExpiresAt: String?) {
+        self.id = id
+        self.nickname = nickname
+        self.email = email
+        self.createdAt = createdAt
+        self.isVip = isVip
+        self.vipExpiresAt = vipExpiresAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        nickname = try container.decodeIfPresent(String.self, forKey: .nickname)
+            ?? container.decodeIfPresent(String.self, forKey: .username)
+            ?? "用户"
+        email = try container.decodeIfPresent(String.self, forKey: .email) ?? ""
+        createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt) ?? ""
+        isVip = try container.decodeIfPresent(Bool.self, forKey: .isVip)
+        vipExpiresAt = try container.decodeIfPresent(String.self, forKey: .vipExpiresAt)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(nickname, forKey: .nickname)
+        try container.encode(email, forKey: .email)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encodeIfPresent(isVip, forKey: .isVip)
+        try container.encodeIfPresent(vipExpiresAt, forKey: .vipExpiresAt)
+    }
 }
 
 struct RegisterResponse: Codable {
@@ -71,4 +110,55 @@ struct ResetPasswordRequest: Codable {
 struct ResetPasswordResponse: Codable {
     let success: Bool
     let message: String
+}
+
+// MARK: - 滑块人机验证
+
+struct SliderCaptcha {
+    let captchaToken: String
+    let bgImage: String
+    let sliderImage: String
+    let puzzleY: Double
+    let bgWidth: Double
+    let bgHeight: Double
+    let sliderWidth: Double
+    let sliderHeight: Double
+}
+
+struct SliderCaptchaResponse: Codable {
+    let success: Bool
+    let message: String?
+    let data: SliderCaptchaData?
+}
+
+struct SliderCaptchaData: Codable {
+    let captchaToken: String
+    let bgImage: String
+    let sliderImage: String
+    let puzzleY: Double
+    let bgWidth: Double
+    let bgHeight: Double
+    let sliderWidth: Double
+    let sliderHeight: Double
+}
+
+struct DragPoint: Codable {
+    let t: Int
+    let x: Int
+}
+
+struct SliderVerifyRequest: Codable {
+    let captchaToken: String
+    let captchaOffsetX: Int
+    let dragTrace: [DragPoint]
+}
+
+struct SliderVerifyData: Codable {
+    let captchaPassToken: String
+}
+
+struct SliderVerifyResponse: Codable {
+    let success: Bool
+    let message: String?
+    let data: SliderVerifyData?
 }

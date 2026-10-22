@@ -73,6 +73,10 @@ enum APIConfig {
     static func musicCoverURL(id: Int) -> String { "\(baseURL)/api/music/cover/\(id)" }
     static func musicInfoURL(id: Int) -> String { "\(baseURL)/api/music/info/\(id)" }
 
+    // MARK: - Captcha APIs
+    static func sliderCaptchaURL() -> String { "\(baseURL)/api/captcha/slider" }
+    static func sliderVerifyURL() -> String { "\(baseURL)/api/captcha/slider/verify" }
+
     // MARK: - User APIs
     static func loginURL() -> String { "\(baseURL)/api/user/login" }
     static func registerURL() -> String { "\(baseURL)/api/user/register" }

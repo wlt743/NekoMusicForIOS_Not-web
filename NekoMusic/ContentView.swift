@@ -7,6 +7,21 @@ struct ContentView: View {
     @State private var showNowPlaying = false
 
     var body: some View {
+        tabs
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                if playerService.currentMusic != nil {
+                    MiniPlayerBar(showNowPlaying: $showNowPlaying)
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 4)
+                }
+            }
+            .fullScreenCover(isPresented: $showNowPlaying) {
+                NowPlayingView()
+                    .environmentObject(playerService)
+            }
+    }
+
+    private var tabs: some View {
         TabView(selection: $selectedTab) {
             HomeView()
                 .tabItem { Label("首页", systemImage: "house") }
@@ -25,16 +40,12 @@ struct ContentView: View {
                 .tag(3)
         }
         .tint(.accentColor)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            if playerService.currentMusic != nil {
-                MiniPlayerBar(showNowPlaying: $showNowPlaying)
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 4)
-            }
-        }
-        .fullScreenCover(isPresented: $showNowPlaying) {
-            NowPlayingView()
-                .environmentObject(playerService)
+    }
+
+    @ViewBuilder
+    private var miniPlayer: some View {
+        if playerService.currentMusic != nil {
+            MiniPlayerBar(showNowPlaying: $showNowPlaying)
         }
     }
 }

@@ -44,10 +44,13 @@ class AudioPlayerService: ObservableObject {
     
     private var playHistory: [Int] = []
     private var cancellables = Set<AnyCancellable>()
+    private var artworkCache: [Int: MPMediaItemArtwork] = [:]
+    private var lastInfoSync: Date = .distantPast
     
     private init() {
         setupAudioSession()
         setupRemoteTransportControls()
+        setupNotifications()
         loadPlayMode()
     }
     
@@ -101,37 +104,121 @@ class AudioPlayerService: ObservableObject {
     }
     
     private func updateNowPlayingInfo() {
-        guard let music = currentMusic else { return }
-        
-        var nowPlayingInfo = [String: Any]()
-        nowPlayingInfo[MPMediaItemPropertyTitle] = music.title
-        nowPlayingInfo[MPMediaItemPropertyArtist] = music.artist
-        nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = music.album
-        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = duration
-        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = currentPosition
-        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
-        
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-        
-        // Load cover image asynchronously
-        let coverURL = APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath)
-        if let url = URL(string: coverURL) {
-            Task {
-                do {
-                    let (data, _) = try await URLSession.shared.data(from: url)
-                    if let image = UIImage(data: data) {
-                        let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
-                        var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [:]
-                        info[MPMediaItemPropertyArtwork] = artwork
-                        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
-                    }
-                } catch {
-                    print("Failed to load cover for now playing: \(error)")
+        guard let music = currentMusic else {
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+            return
+        }
+
+        var info: [String: Any] = [
+            MPMediaItemPropertyTitle: music.title,
+            MPMediaItemPropertyArtist: music.artist,
+            MPMediaItemPropertyAlbumTitle: music.album,
+            MPMediaItemPropertyPlaybackDuration: duration,
+            MPNowPlayingInfoPropertyElapsedPlaybackTime: currentPosition,
+            MPNowPlayingInfoPropertyPlaybackRate: isPlaying ? 1.0 : 0.0,
+            MPNowPlayingInfoPropertyDefaultPlaybackRate: 1.0,
+            MPNowPlayingInfoPropertyMediaType: MPNowPlayingInfoMediaType.audio.rawValue,
+            MPNowPlayingInfoPropertyIsLiveStream: false,
+            MPNowPlayingInfoPropertyExternalContentIdentifier: "nekomusic:\(music.id)",
+            MPNowPlayingInfoPropertyPlaybackQueueCount: playlist.count,
+            MPNowPlayingInfoPropertyPlaybackQueueIndex: playlist.firstIndex(where: { $0.id == music.id }) ?? 0,
+        ]
+
+        if let artwork = artworkCache[music.id] {
+            info[MPMediaItemPropertyArtwork] = artwork
+        }
+
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+        MPNowPlayingInfoCenter.default().playbackState = isPlaying ? .playing : .paused
+        lastInfoSync = Date()
+
+        loadArtworkIfNeeded(for: music)
+    }
+
+    /// 封面按歌曲缓存，避免每次刷新 Now Playing 都重新下载
+    private func loadArtworkIfNeeded(for music: Music) {
+        guard artworkCache[music.id] == nil else { return }
+
+        let coverPath = APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath)
+        guard URL(string: coverPath) != nil else { return }
+
+        Task { [weak self] in
+            guard let self = self else { return }
+            do {
+                let data = try await NetworkService.shared.fetchData(url: coverPath)
+                guard let image = UIImage(data: data) else { return }
+                let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+
+                await MainActor.run {
+                    self.artworkCache[music.id] = artwork
+                    guard self.currentMusic?.id == music.id else { return }
+
+                    var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [:]
+                    info[MPMediaItemPropertyArtwork] = artwork
+                    MPNowPlayingInfoCenter.default().nowPlayingInfo = info
                 }
+            } catch {
+                print("Load now playing artwork failed: \(error)")
             }
         }
     }
-    
+
+    /// 播放中节流更新进度，保证控制中心/锁屏进度条平滑
+    private func syncElapsedTime() {
+        guard let music = currentMusic else { return }
+
+        var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [:]
+        info[MPMediaItemPropertyTitle] = music.title
+        info[MPMediaItemPropertyArtist] = music.artist
+        info[MPMediaItemPropertyAlbumTitle] = music.album
+        info[MPMediaItemPropertyPlaybackDuration] = duration
+        info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = currentPosition
+        info[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+        MPNowPlayingInfoCenter.default().playbackState = isPlaying ? .playing : .paused
+        lastInfoSync = Date()
+    }
+
+    // MARK: - 音频中断 / 线路变化
+
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self = self,
+                  let raw = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+                  let type = AVAudioSession.InterruptionType(rawValue: raw) else { return }
+
+            switch type {
+            case .began:
+                self.pause()
+            case .ended:
+                let options = notification.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
+                if AVAudioSession.InterruptionOptions(rawValue: options).contains(.shouldResume) {
+                    self.play()
+                }
+            @unknown default:
+                break
+            }
+        }
+
+        NotificationCenter.default.addObserver(
+            forName: AVAudioSession.routeChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self = self,
+                  let raw = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt,
+                  let reason = AVAudioSession.RouteChangeReason(rawValue: raw) else { return }
+
+            if reason == .oldDeviceUnavailable {
+                self.pause()
+            }
+        }
+    }
+
     // MARK: - Playback Controls
     
     func playMusic(_ music: Music) {
@@ -193,6 +280,7 @@ class AudioPlayerService: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] dur in
                 self?.duration = dur
+                self?.syncElapsedTime()
             }
             .store(in: &cancellables)
 
@@ -306,7 +394,12 @@ class AudioPlayerService: ObservableObject {
         
         let interval = CMTime(seconds: 0.5, preferredTimescale: 600)
         timeObserver = player?.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
-            self?.currentPosition = CMTimeGetSeconds(time)
+            guard let self = self else { return }
+            self.currentPosition = CMTimeGetSeconds(time)
+
+            if Date().timeIntervalSince(self.lastInfoSync) >= 1.0 {
+                self.syncElapsedTime()
+            }
         }
     }
     

@@ -36,7 +36,28 @@ NekoMusic iOS 是一个轻量、原生、无广告的音乐播放器客户端。
 | 最低版本 | iOS 16.0 |
 | 依赖 | 无（不依赖 CocoaPods / SPM） |
 | 构建 | Xcode 15+，fastlane 可选 |
-| 当前版本 | 1.0.1（[更新日志](CHANGELOG.md)） |
+| 当前版本 | 2.0.0（[更新日志](CHANGELOG.md)） |
+
+## 为 iPhone Duo 与液态玻璃而生
+
+**我们适配了 iOS 最新的液态玻璃效果，不仅如此，我们还适配了 iPhone dou！！**
+
+- 使用 iOS 26 / 27 SDK 构建，系统 Tab 栏、导航栏与工具栏自动采用 **Liquid Glass** 材质，
+  跟随系统版本自动获得新外观
+- **折叠与展开无缝自适应**：合上时按外屏尺寸重排，展开后充分利用内屏的横向空间
+- 展开后工具栏自动**竖排到右侧**，与 iPhone Duo 的系统布局一致
+- 播放页在宽屏形态下额外提供右侧返回入口，同时保留左边缘侧滑返回
+- 布局基于可用空间与 size class 计算，不依赖固定屏幕尺寸，也不依赖设备方向
+
+## 界面预览
+
+**iPhone 18 Pro**
+
+<img src="docs/images/iphone-18-pro.png" alt="iPhone 18 Pro 运行界面" width="300">
+
+**iPhone Duo（展开）**
+
+<img src="docs/images/iphone-duo-unfolded.png" alt="iPhone Duo 展开运行界面" width="760">
 
 ---
 

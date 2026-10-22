@@ -5,7 +5,7 @@ enum APIConfig {
     static let baseURL = "https://music.nekocore.cn"
 
     /// 客户端标识，后端用于区分官方客户端 / 第三方客户端
-    static let clientVersion = "1.0.1"
+    static let clientVersion = "2.0.0"
     static let clientHeader = "ios+\(clientVersion)"
     static let userAgent = "NekoMusic/\(clientVersion) (iPhone; iOS 16.0; Scale/3.0)"
     /// 后端风控对「非浏览器 UA」较严格，这里使用 Chromium 系 UA 以通过客户端识别

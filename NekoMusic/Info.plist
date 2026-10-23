@@ -25,6 +25,9 @@
 	<array>
 		<string>alipay</string>
 		<string>weixin</string>
+		<string>mqq</string>
+		<string>mqqapi</string>
+		<string>twitter</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

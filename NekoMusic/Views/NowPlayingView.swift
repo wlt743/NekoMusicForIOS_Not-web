@@ -15,34 +15,18 @@ struct NowPlayingView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                GeometryReader { geo in
-                    let width = max(geo.size.width, 1)
-                    ZStack {
-                        coverPage
-                            .offset(x: -lyricProgress * width)
-                            .allowsHitTesting(lyricProgress < 0.5)
-
-                        lyricsPage
-                            .offset(x: (1 - lyricProgress) * width)
-                            .allowsHitTesting(lyricProgress > 0.5)
+            GeometryReader { geo in
+                let isLandscape = geo.size.width > geo.size.height
+                Group {
+                    if isLandscape {
+                        landscapeLayout(width: geo.size.width, height: geo.size.height)
+                    } else {
+                        portraitLayout
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .contentShape(Rectangle())
-                    .simultaneousGesture(pageDrag(width: width))
-                    .clipped()
                 }
-                .padding(.horizontal, 24)
-
-                trackInfo
-                    .padding(.horizontal, 24)
-                progress
-                    .padding(.horizontal, 24)
-                controls
-                    .padding(.horizontal, 24)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .foregroundStyle(.white)
-            .padding(.bottom, 24)
             .background {
                 coverBackground
             }
@@ -173,6 +157,66 @@ struct NowPlayingView: View {
         guard let music = playerService.currentMusic else { return }
         BlacklistService.shared.block(music)
         playerService.next()
+    }
+
+    // MARK: - 竖屏布局
+
+    private var portraitLayout: some View {
+        VStack(spacing: 0) {
+            GeometryReader { geo in
+                let width = max(geo.size.width, 1)
+                ZStack {
+                    coverPage
+                        .offset(x: -lyricProgress * width)
+                        .allowsHitTesting(lyricProgress < 0.5)
+
+                    lyricsPage
+                        .offset(x: (1 - lyricProgress) * width)
+                        .allowsHitTesting(lyricProgress > 0.5)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentShape(Rectangle())
+                .simultaneousGesture(pageDrag(width: width))
+                .clipped()
+            }
+            .padding(.horizontal, 24)
+
+            trackInfo
+                .padding(.horizontal, 24)
+            progress
+                .padding(.horizontal, 24)
+            controls
+                .padding(.horizontal, 24)
+        }
+        .padding(.bottom, 24)
+    }
+
+    // MARK: - 横屏布局（左封面 / 右信息与控制，参考 Apple Music）
+
+    private func landscapeLayout(width: CGFloat, height: CGFloat) -> some View {
+        HStack(alignment: .center, spacing: 28) {
+            coverPage
+                .frame(width: min(width * 0.42, height * 0.82), height: min(width * 0.42, height * 0.82))
+                .onTapGesture { toggleLyrics() }
+
+            VStack(spacing: 16) {
+                if lyricProgress > 0.5 {
+                    lyricsPage
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    Spacer(minLength: 0)
+                    trackInfo
+                    Spacer(minLength: 0)
+                }
+
+                progress
+                controls
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .padding(.horizontal, 36)
+        .padding(.top, 8)
+        .padding(.bottom, 18)
     }
 
     // MARK: - 两页

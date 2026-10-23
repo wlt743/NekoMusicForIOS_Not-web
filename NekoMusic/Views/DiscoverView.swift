@@ -27,6 +27,7 @@ struct DiscoverView: View {
                     )
                 }
             }
+            .background { WallpaperBackdrop() }
             .navigationTitle("发现")
             .searchable(text: $searchText, prompt: "搜索音乐、歌手")
             .submitLabel(.search)
@@ -97,7 +98,6 @@ struct DiscoverView: View {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .background { WallpaperBackdrop() }
         }
     }
 

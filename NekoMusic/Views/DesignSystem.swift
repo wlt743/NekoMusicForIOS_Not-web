@@ -217,10 +217,10 @@ struct WallpaperBackdrop: View {
                     .scaledToFill()
                     .frame(width: proxy.size.width, height: proxy.size.height)
                     .clipped()
-                    .blur(radius: 1.5)
+                    .blur(radius: appearance.wallpaperBlur)
                     .overlay(
                         Color(.systemBackground)
-                            .opacity(colorScheme == .dark ? 0.58 : 0.38)
+                            .opacity(min(0.95, appearance.wallpaperDim + (colorScheme == .dark ? 0.12 : 0)))
                     )
                     .ignoresSafeArea()
             } else {

@@ -42,6 +42,16 @@ final class AppearanceSettings: ObservableObject {
         didSet { UserDefaults.standard.set(customColorHex, forKey: Keys.customColor) }
     }
 
+    /// 壁纸模糊半径（0–30）
+    @Published var wallpaperBlur: Double {
+        didSet { UserDefaults.standard.set(wallpaperBlur, forKey: Keys.wallpaperBlur) }
+    }
+
+    /// 壁纸遮罩强度（0–0.9），越大越暗/越淡，文字越清晰
+    @Published var wallpaperDim: Double {
+        didSet { UserDefaults.standard.set(wallpaperDim, forKey: Keys.wallpaperDim) }
+    }
+
     @Published private(set) var wallpaperImage: UIImage?
 
     private enum Keys {
@@ -49,6 +59,8 @@ final class AppearanceSettings: ObservableObject {
         static let wallpaper = "appearance.wallpaperFile"
         static let lyricFontSize = "appearance.lyricFontSize"
         static let customColor = "appearance.customColor"
+        static let wallpaperBlur = "appearance.wallpaperBlur"
+        static let wallpaperDim = "appearance.wallpaperDim"
     }
 
     static let customThemeID = "custom"
@@ -87,6 +99,11 @@ final class AppearanceSettings: ObservableObject {
         let savedSize = UserDefaults.standard.double(forKey: Keys.lyricFontSize)
         lyricFontSize = savedSize >= 14 ? savedSize : 19
         customColorHex = UserDefaults.standard.string(forKey: Keys.customColor) ?? "#FF2D55"
+
+        let savedBlur = UserDefaults.standard.double(forKey: Keys.wallpaperBlur)
+        wallpaperBlur = savedBlur > 0 ? savedBlur : 2
+        let savedDim = UserDefaults.standard.double(forKey: Keys.wallpaperDim)
+        wallpaperDim = savedDim > 0 ? savedDim : 0.45
         wallpaperImage = Self.loadWallpaper(named: UserDefaults.standard.string(forKey: Keys.wallpaper))
     }
 

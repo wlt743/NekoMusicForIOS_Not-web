@@ -134,6 +134,32 @@ struct AppearanceView: View {
                 }
 
                 if appearance.wallpaperImage != nil {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("模糊")
+                            Spacer()
+                            Text("\(Int(appearance.wallpaperBlur))")
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                        }
+                        Slider(value: $appearance.wallpaperBlur, in: 0...30, step: 1)
+                    }
+                    .padding(.vertical, 4)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("遮罩")
+                            Spacer()
+                            Text("\(Int(appearance.wallpaperDim * 100))%")
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                        }
+                        Slider(value: $appearance.wallpaperDim, in: 0...0.9, step: 0.05)
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                if appearance.wallpaperImage != nil {
                     Button(role: .destructive) {
                         appearance.removeWallpaper()
                     } label: {

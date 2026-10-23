@@ -9,6 +9,9 @@ final class LyricLiveActivityManager {
 
     private var activity: Activity<LyricActivityAttributes>?
     private var lastState: LyricActivityAttributes.ContentState?
+    /// 更新排队：正在写入时只记住最新一帧，写完立刻补上
+    private var pendingState: LyricActivityAttributes.ContentState?
+    private var isUpdating = false
 
     private init() {}
 
@@ -50,10 +53,20 @@ final class LyricLiveActivityManager {
         // 内容没变就不打扰系统
         guard state != lastState else { return }
         lastState = state
+        pendingState = state
 
-        Task {
+        guard !isUpdating else { return }
+        isUpdating = true
+        Task { await drain(activity: activity) }
+    }
+
+    /// 串行地把待更新状态写进活动，避免并发 update 丢帧
+    private func drain(activity: Activity<LyricActivityAttributes>) async {
+        while let state = pendingState {
+            pendingState = nil
             await activity.update(using: state)
         }
+        isUpdating = false
     }
 
     func end() {

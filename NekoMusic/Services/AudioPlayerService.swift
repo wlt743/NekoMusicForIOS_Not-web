@@ -162,7 +162,8 @@ class AudioPlayerService: ObservableObject {
     /// 当前行 + 前后各一行，给锁屏实时活动用
     private func lyricNeighborhood() -> (previous: String, current: String, next: String) {
         guard !lyricLines.isEmpty else { return ("", "", "") }
-        let index = LyricsParser.index(at: currentPosition, in: lyricLines)
+        // 提前一点点切换，抵消锁屏渲染延迟
+        let index = LyricsParser.index(at: currentPosition + 0.12, in: lyricLines)
         guard index >= 0, index < lyricLines.count else { return ("", "", "") }
 
         func text(_ i: Int) -> String {
@@ -484,7 +485,7 @@ class AudioPlayerService: ObservableObject {
             player?.removeTimeObserver(observer)
         }
         
-        let interval = CMTime(seconds: 0.5, preferredTimescale: 600)
+        let interval = CMTime(seconds: 0.2, preferredTimescale: 600)
         timeObserver = player?.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
             guard let self = self else { return }
             self.currentPosition = CMTimeGetSeconds(time)

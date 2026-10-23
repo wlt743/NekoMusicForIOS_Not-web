@@ -15,7 +15,7 @@ final class LyricLiveActivityManager {
 
     private init() {}
 
-    func start(title: String, artist: String) {
+    func start(title: String, artist: String, artworkData: Data?) {
         guard #available(iOS 16.1, *) else { return }
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
         guard activity == nil else { return }
@@ -23,6 +23,7 @@ final class LyricLiveActivityManager {
         let state = LyricActivityAttributes.ContentState(
             title: title,
             artist: artist,
+            artworkData: artworkData,
             previous: "",
             current: "正在载入歌词…",
             next: "",
@@ -41,13 +42,14 @@ final class LyricLiveActivityManager {
         }
     }
 
-    func update(title: String, artist: String, previous: String, current: String, next: String, isPlaying: Bool) {
+    func update(title: String, artist: String, artworkData: Data?, previous: String, current: String, next: String, isPlaying: Bool) {
         guard #available(iOS 16.1, *) else { return }
         guard let activity = activity else { return }
 
         let state = LyricActivityAttributes.ContentState(
             title: title,
             artist: artist,
+            artworkData: artworkData,
             previous: previous,
             current: current,
             next: next,
@@ -61,7 +63,8 @@ final class LyricLiveActivityManager {
 
         guard !isUpdating else { return }
         isUpdating = true
-        Task { await drain(activity: activity) }
+        // 提高优先级，避免后台播放时更新被延后
+        Task(priority: .userInitiated) { await drain(activity: activity) }
     }
 
     /// 串行地把待更新状态写进活动，避免并发 update 丢帧

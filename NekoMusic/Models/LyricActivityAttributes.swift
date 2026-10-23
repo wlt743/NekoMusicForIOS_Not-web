@@ -6,6 +6,7 @@ struct LyricActivityAttributes: ActivityAttributes {
     struct ContentState: Codable, Hashable {
         var title: String
         var artist: String
+        var artworkData: Data?
         var previous: String
         var current: String
         var next: String

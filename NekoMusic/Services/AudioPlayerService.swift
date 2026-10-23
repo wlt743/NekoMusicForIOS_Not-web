@@ -48,6 +48,8 @@ class AudioPlayerService: ObservableObject {
     private var playHistory: [Int] = []
     private var cancellables = Set<AnyCancellable>()
     private var artworkCache: [Int: MPMediaItemArtwork] = [:]
+    /// 锁屏实时活动用的小封面（96px JPEG）
+    private var artworkDataCache: [Int: Data] = [:]
     /// 已经同步到锁屏的歌词行，避免每 0.5 秒重复写 nowPlayingInfo
     private var lastPublishedLyricLine: String?
     private var lastInfoSync: Date = .distantPast
@@ -220,6 +222,7 @@ class AudioPlayerService: ObservableObject {
                 LyricLiveActivityManager.shared.update(
                     title: music.title,
                     artist: music.artist,
+                    artworkData: self.artworkDataCache[music.id],
                     previous: neighborhood.previous,
                     current: neighborhood.current,
                     next: neighborhood.next,
@@ -246,18 +249,40 @@ class AudioPlayerService: ObservableObject {
                 guard let image = UIImage(data: data) else { return }
                 let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
 
+                // 生成锁屏活动用的小图
+                let small = Self.smallArtworkData(from: image)
+
                 await MainActor.run {
                     self.artworkCache[music.id] = artwork
+                    if let small = small {
+                        self.artworkDataCache[music.id] = small
+                    }
                     guard self.currentMusic?.id == music.id else { return }
 
                     var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [:]
                     info[MPMediaItemPropertyArtwork] = artwork
                     MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+
+                    // 封面到了再刷一次活动，卡片才有图
+                    self.updateNowPlayingInfo()
                 }
             } catch {
                 print("Load now playing artwork failed: \(error)")
             }
         }
+    }
+
+    /// 把封面压成 96px JPEG，塞进实时活动的状态里
+    private static func smallArtworkData(from image: UIImage, maxSide: CGFloat = 96) -> Data? {
+        let size = image.size
+        guard size.width > 0, size.height > 0 else { return nil }
+        let scale = min(1, maxSide / max(size.width, size.height))
+        let target = CGSize(width: size.width * scale, height: size.height * scale)
+        let renderer = UIGraphicsImageRenderer(size: target)
+        let resized = renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: target))
+        }
+        return resized.jpegData(compressionQuality: 0.7)
     }
 
     /// 播放中节流更新进度，保证控制中心/锁屏进度条平滑
@@ -318,7 +343,11 @@ class AudioPlayerService: ObservableObject {
         currentMusic = music
         if #available(iOS 16.1, *) {
             Task { @MainActor in
-                LyricLiveActivityManager.shared.start(title: music.title, artist: music.artist)
+                LyricLiveActivityManager.shared.start(
+                    title: music.title,
+                    artist: music.artist,
+                    artworkData: self.artworkDataCache[music.id]
+                )
             }
         }
         duration = 0

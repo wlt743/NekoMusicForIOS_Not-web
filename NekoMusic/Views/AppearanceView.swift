@@ -40,9 +40,53 @@ struct AppearanceView: View {
                         }
                         .buttonStyle(.plain)
                     }
+
+                    Button {
+                        appearance.themeID = AppearanceSettings.customThemeID
+                    } label: {
+                        VStack(spacing: 6) {
+                            Circle()
+                                .fill(appearance.customColor)
+                                .frame(width: 46, height: 46)
+                                .overlay {
+                                    if appearance.themeID == AppearanceSettings.customThemeID {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 18, weight: .bold))
+                                            .foregroundStyle(.white)
+                                    }
+                                }
+                                .overlay {
+                                    Circle()
+                                        .stroke(
+                                            LinearGradient(
+                                                colors: [.red, .orange, .yellow, .green, .blue, .purple],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 2
+                                        )
+                                }
+
+                            Text("自定义")
+                                .font(.caption2)
+                                .foregroundStyle(appearance.themeID == AppearanceSettings.customThemeID ? Color.primary : Color.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(.vertical, 6)
                 .listRowBackground(Color.clear)
+
+                ColorPicker(
+                    selection: Binding(
+                        get: { appearance.customColor },
+                        set: { appearance.setCustomColor($0) }
+                    ),
+                    supportsOpacity: false
+                ) {
+                    Label("调色盘", systemImage: "eyedropper")
+                }
             } header: {
                 Text("主题色")
             } footer: {

@@ -37,13 +37,21 @@ final class AppearanceSettings: ObservableObject {
         didSet { UserDefaults.standard.set(lyricFontSize, forKey: Keys.lyricFontSize) }
     }
 
+    /// 调色盘里选的自定义颜色（十六进制）
+    @Published var customColorHex: String {
+        didSet { UserDefaults.standard.set(customColorHex, forKey: Keys.customColor) }
+    }
+
     @Published private(set) var wallpaperImage: UIImage?
 
     private enum Keys {
         static let theme = "appearance.themeID"
         static let wallpaper = "appearance.wallpaperFile"
         static let lyricFontSize = "appearance.lyricFontSize"
+        static let customColor = "appearance.customColor"
     }
+
+    static let customThemeID = "custom"
 
     private var wallpaperFileName: String? {
         get { UserDefaults.standard.string(forKey: Keys.wallpaper) }
@@ -54,12 +62,31 @@ final class AppearanceSettings: ObservableObject {
         ThemeOption.all.first { $0.id == themeID } ?? .fallback
     }
 
-    var tintColor: Color { theme.color }
+    var customColor: Color {
+        Color(hex: customColorHex) ?? ThemeOption.fallback.color
+    }
+
+    var tintColor: Color {
+        themeID == Self.customThemeID ? customColor : theme.color
+    }
+
+    /// 调色盘选色：转成十六进制保存，并自动切到「自定义」
+    func setCustomColor(_ color: Color) {
+        let ui = UIColor(color)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        guard ui.getRed(&r, green: &g, blue: &b, alpha: &a) else { return }
+        customColorHex = String(
+            format: "#%02X%02X%02X",
+            Int(round(r * 255)), Int(round(g * 255)), Int(round(b * 255))
+        )
+        themeID = Self.customThemeID
+    }
 
     private init() {
         themeID = UserDefaults.standard.string(forKey: Keys.theme) ?? ThemeOption.fallback.id
         let savedSize = UserDefaults.standard.double(forKey: Keys.lyricFontSize)
         lyricFontSize = savedSize >= 14 ? savedSize : 19
+        customColorHex = UserDefaults.standard.string(forKey: Keys.customColor) ?? "#FF2D55"
         wallpaperImage = Self.loadWallpaper(named: UserDefaults.standard.string(forKey: Keys.wallpaper))
     }
 
@@ -110,5 +137,21 @@ final class AppearanceSettings: ObservableObject {
         return renderer.image { _ in
             image.draw(in: CGRect(origin: .zero, size: target))
         }
+    }
+}
+
+
+extension Color {
+    init?(hex: String) {
+        var text = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        if text.hasPrefix("#") { text.removeFirst() }
+        guard text.count == 6, let value = UInt64(text, radix: 16) else { return nil }
+        self.init(
+            .sRGB,
+            red: Double((value >> 16) & 0xFF) / 255,
+            green: Double((value >> 8) & 0xFF) / 255,
+            blue: Double(value & 0xFF) / 255,
+            opacity: 1
+        )
     }
 }

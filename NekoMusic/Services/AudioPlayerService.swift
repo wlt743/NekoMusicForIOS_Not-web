@@ -48,6 +48,8 @@ class AudioPlayerService: ObservableObject {
     private var playHistory: [Int] = []
     private var cancellables = Set<AnyCancellable>()
     private var artworkCache: [Int: MPMediaItemArtwork] = [:]
+    /// 已经同步到锁屏的歌词行，避免每 0.5 秒重复写 nowPlayingInfo
+    private var lastPublishedLyricLine: String?
     private var lastInfoSync: Date = .distantPast
     
     private init() {
@@ -157,6 +159,20 @@ class AudioPlayerService: ObservableObject {
         return text.isEmpty ? nil : text
     }
 
+    /// 当前行 + 前后各一行，给锁屏实时活动用
+    private func lyricNeighborhood() -> (previous: String, current: String, next: String) {
+        guard !lyricLines.isEmpty else { return ("", "", "") }
+        let index = LyricsParser.index(at: currentPosition, in: lyricLines)
+        guard index >= 0, index < lyricLines.count else { return ("", "", "") }
+
+        func text(_ i: Int) -> String {
+            guard i >= 0, i < lyricLines.count else { return "" }
+            return lyricLines[i].text.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        return (text(index - 1), text(index), text(index + 1))
+    }
+
     /// 锁屏 / 控制中心显示的第二行：有歌词就显示歌词，否则显示歌手
     private func displayArtist(for music: Music) -> String {
         currentLyricLine ?? music.artist
@@ -182,6 +198,9 @@ class AudioPlayerService: ObservableObject {
     private func updateNowPlayingInfo() {
         guard let music = currentMusic else {
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+            if #available(iOS 16.1, *) {
+                Task { @MainActor in LyricLiveActivityManager.shared.end() }
+            }
             return
         }
 
@@ -192,6 +211,19 @@ class AudioPlayerService: ObservableObject {
 
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info
         MPNowPlayingInfoCenter.default().playbackState = isPlaying ? .playing : .paused
+
+        let neighborhood = lyricNeighborhood()
+        let playing = isPlaying
+        if #available(iOS 16.1, *) {
+            Task { @MainActor in
+                LyricLiveActivityManager.shared.update(
+                    previous: neighborhood.previous,
+                    current: neighborhood.current,
+                    next: neighborhood.next,
+                    isPlaying: playing
+                )
+            }
+        }
         lastInfoSync = Date()
 
         loadArtworkIfNeeded(for: music)
@@ -281,9 +313,15 @@ class AudioPlayerService: ObservableObject {
         }
 
         currentMusic = music
+        if #available(iOS 16.1, *) {
+            Task { @MainActor in
+                LyricLiveActivityManager.shared.start(title: music.title, artist: music.artist)
+            }
+        }
         duration = 0
         currentPosition = 0
         currentLyrics = ""
+        lastPublishedLyricLine = nil
 
         // 加入当前播放列表
         if !playlist.contains(where: { $0.id == music.id }) {
@@ -453,6 +491,12 @@ class AudioPlayerService: ObservableObject {
 
             if Date().timeIntervalSince(self.lastInfoSync) >= 1.0 {
                 self.syncElapsedTime()
+            }
+
+            // 歌词行变化时同步到锁屏 / 待机显示的第二行
+            if let line = self.currentLyricLine, line != self.lastPublishedLyricLine {
+                self.lastPublishedLyricLine = line
+                self.updateNowPlayingInfo()
             }
         }
     }

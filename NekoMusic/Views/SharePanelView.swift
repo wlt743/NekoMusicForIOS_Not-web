@@ -75,6 +75,7 @@ struct SharePanelView: View {
     @Environment(\.openURL) private var openURL
 
     @State private var showSystemShare = false
+    @State private var showVideoRender = false
     @State private var alertMessage = ""
     @State private var showAlert = false
     @State private var copiedToast = false
@@ -104,6 +105,10 @@ struct SharePanelView: View {
 
                 actionButton(title: "更多", icon: "ellipsis", color: .secondary) {
                     showSystemShare = true
+                }
+
+                actionButton(title: "分享视频", icon: "film", color: .secondary) {
+                    showVideoRender = true
                 }
             }
             .padding(.horizontal, 18)

@@ -58,6 +58,11 @@
 		B1000092 /* FavoritePlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000092 /* FavoritePlaylistsView.swift */; };
 		B1000093 /* UploadedMusicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000093 /* UploadedMusicView.swift */; };
 		B1000094 /* QRLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000094 /* QRLoginView.swift */; };
+		B1000095 /* CacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000095 /* CacheService.swift */; };
+		B1000096 /* RecognizeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000096 /* RecognizeService.swift */; };
+		B1000097 /* RecognizeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000097 /* RecognizeView.swift */; };
+		B1000098 /* VideoRenderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000098 /* VideoRenderService.swift */; };
+		B1000099 /* VideoRenderSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000099 /* VideoRenderSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -114,6 +119,11 @@
 		B2000092 /* FavoritePlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritePlaylistsView.swift; sourceTree = "<group>"; };
 		B2000093 /* UploadedMusicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadedMusicView.swift; sourceTree = "<group>"; };
 		B2000094 /* QRLoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRLoginView.swift; sourceTree = "<group>"; };
+		B2000095 /* CacheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheService.swift; sourceTree = "<group>"; };
+		B2000096 /* RecognizeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognizeService.swift; sourceTree = "<group>"; };
+		B2000097 /* RecognizeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognizeView.swift; sourceTree = "<group>"; };
+		B2000098 /* VideoRenderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoRenderService.swift; sourceTree = "<group>"; };
+		B2000099 /* VideoRenderSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoRenderSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -201,6 +211,9 @@
 				B2000060 /* LyricLiveActivityManager.swift */,
 				B2000090 /* FavoritePlaylistService.swift */,
 				B2000091 /* PlaylistEditService.swift */,
+				B2000095 /* CacheService.swift */,
+				B2000096 /* RecognizeService.swift */,
+				B2000098 /* VideoRenderService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -232,6 +245,8 @@
 				B2000092 /* FavoritePlaylistsView.swift */,
 				B2000093 /* UploadedMusicView.swift */,
 				B2000094 /* QRLoginView.swift */,
+				B2000097 /* RecognizeView.swift */,
+				B2000099 /* VideoRenderSheet.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -416,6 +431,11 @@
 				B1000092 /* FavoritePlaylistsView.swift in Sources */,
 				B1000093 /* UploadedMusicView.swift in Sources */,
 				B1000094 /* QRLoginView.swift in Sources */,
+				B1000095 /* CacheService.swift in Sources */,
+				B1000096 /* RecognizeService.swift in Sources */,
+				B1000097 /* RecognizeView.swift in Sources */,
+				B1000098 /* VideoRenderService.swift in Sources */,
+				B1000099 /* VideoRenderSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

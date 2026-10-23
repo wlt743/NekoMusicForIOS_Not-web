@@ -30,6 +30,16 @@ struct DiscoverView: View {
             .background { WallpaperBackdrop() }
             .navigationTitle("发现")
             .searchable(text: $searchText, prompt: "搜索音乐、歌手")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        RecognizeView()
+                    } label: {
+                        Image(systemName: "waveform")
+                    }
+                    .accessibilityLabel("听歌识曲")
+                }
+            }
             .submitLabel(.search)
             .onSubmit(of: .search) {
                 Task { await performSearch() }

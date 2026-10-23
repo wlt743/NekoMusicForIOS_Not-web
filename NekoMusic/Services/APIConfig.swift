@@ -73,6 +73,14 @@ enum APIConfig {
     static func musicCoverURL(id: Int) -> String { "\(baseURL)/api/music/cover/\(id)" }
     static func musicInfoURL(id: Int) -> String { "\(baseURL)/api/music/info/\(id)" }
 
+    // MARK: - 分享视频渲染
+    static func videoRenderCreateURL() -> String { "\(baseURL)/api/video/render/create" }
+    static func videoRenderStatusURL(jobId: String) -> String { "\(baseURL)/api/video/render/\(jobId)" }
+    static func videoRenderDownloadURL(jobId: String) -> String { "\(baseURL)/api/video/render/\(jobId)/download" }
+
+    /// 听歌识曲
+    static func recognizeURL() -> String { "\(baseURL)/api/music/recognize" }
+
     // MARK: - Captcha APIs
     static func sliderCaptchaURL() -> String { "\(baseURL)/api/captcha/slider" }
     static func sliderVerifyURL() -> String { "\(baseURL)/api/captcha/slider/verify" }

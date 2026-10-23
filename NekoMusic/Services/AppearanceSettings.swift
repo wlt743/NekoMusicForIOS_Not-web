@@ -32,6 +32,11 @@ final class AppearanceSettings: ObservableObject {
         didSet { UserDefaults.standard.set(themeID, forKey: Keys.theme) }
     }
 
+    /// 外观模式：system / light / dark
+    @Published var appearanceMode: String {
+        didSet { UserDefaults.standard.set(appearanceMode, forKey: Keys.appearanceMode) }
+    }
+
     /// 歌词字号（14–28pt）
     @Published var lyricFontSize: Double {
         didSet { UserDefaults.standard.set(lyricFontSize, forKey: Keys.lyricFontSize) }
@@ -56,6 +61,7 @@ final class AppearanceSettings: ObservableObject {
 
     private enum Keys {
         static let theme = "appearance.themeID"
+        static let appearanceMode = "appearance.mode"
         static let wallpaper = "appearance.wallpaperFile"
         static let lyricFontSize = "appearance.lyricFontSize"
         static let customColor = "appearance.customColor"
@@ -68,6 +74,15 @@ final class AppearanceSettings: ObservableObject {
     private var wallpaperFileName: String? {
         get { UserDefaults.standard.string(forKey: Keys.wallpaper) }
         set { UserDefaults.standard.set(newValue, forKey: Keys.wallpaper) }
+    }
+
+    /// 给 preferredColorScheme 用；system 返回 nil 表示跟随系统
+    var colorScheme: ColorScheme? {
+        switch appearanceMode {
+        case "light": return .light
+        case "dark": return .dark
+        default: return nil
+        }
     }
 
     var theme: ThemeOption {
@@ -96,6 +111,7 @@ final class AppearanceSettings: ObservableObject {
 
     private init() {
         themeID = UserDefaults.standard.string(forKey: Keys.theme) ?? ThemeOption.fallback.id
+        appearanceMode = UserDefaults.standard.string(forKey: Keys.appearanceMode) ?? "system"
         let savedSize = UserDefaults.standard.double(forKey: Keys.lyricFontSize)
         lyricFontSize = savedSize >= 14 ? savedSize : 19
         customColorHex = UserDefaults.standard.string(forKey: Keys.customColor) ?? "#FF2D55"

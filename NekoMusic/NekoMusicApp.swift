@@ -21,6 +21,7 @@ struct NekoMusicApp: App {
                 .environmentObject(playerService)
                 .environmentObject(appearance)
                 .tint(appearance.tintColor)
+                .preferredColorScheme(appearance.colorScheme)
         }
     }
 }

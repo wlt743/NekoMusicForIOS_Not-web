@@ -199,6 +199,8 @@ private struct AvatarView: View {
 
 struct SettingsView: View {
     @EnvironmentObject var authService: AuthService
+    @StateObject private var appearance = AppearanceSettings.shared
+    @State private var cacheSize = "—"
 
     @State private var showChangePassword = false
     @State private var oldPassword = ""
@@ -245,10 +247,31 @@ struct SettingsView: View {
             }
 
             Section("外观") {
+                Picker("外观模式", selection: $appearance.appearanceMode) {
+                    Text("跟随系统").tag("system")
+                    Text("浅色").tag("light")
+                    Text("深色").tag("dark")
+                }
+                .pickerStyle(.segmented)
+
                 NavigationLink {
                     AppearanceView()
                 } label: {
                     Label("主题色与壁纸", systemImage: "paintpalette")
+                }
+            }
+
+            Section("存储") {
+                Button {
+                    CacheService.clear()
+                    cacheSize = CacheService.formattedSize()
+                } label: {
+                    HStack {
+                        Label("清除缓存", systemImage: "trash")
+                        Spacer()
+                        Text(cacheSize)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
 
@@ -266,6 +289,9 @@ struct SettingsView: View {
         }
         .listStyle(.insetGrouped)
         .navigationTitle("设置")
+        .task {
+            cacheSize = CacheService.formattedSize()
+        }
         .navigationBarTitleDisplayMode(.inline)
         .alert("修改密码", isPresented: $showChangePassword) {
             SecureField("当前密码", text: $oldPassword)

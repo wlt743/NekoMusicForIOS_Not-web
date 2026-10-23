@@ -383,7 +383,7 @@ class AudioPlayerService: ObservableObject {
                     self.startPlayback(url: url)
                 }
             } catch {
-                print("Resolve audio url error: \(error)")
+                NSLog("[NekoAPI] resolve audio url failed: %@", String(describing: error))
                 await MainActor.run {
                     guard self.currentMusic?.id == music.id else { return }
                     self.isPlaying = false

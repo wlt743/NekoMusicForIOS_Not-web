@@ -222,12 +222,13 @@ struct NowPlayingView: View {
         let leftWidth = min(width * 0.46, height * 1.1)
 
         return HStack(spacing: 24) {
+            // 从完整到极简四级，保证低矮机型也能完整显示控件
             ViewThatFits(in: .vertical) {
-                // 首选：完整信息 + 完整控件
-                leftColumn(width: leftWidth, compact: false)
-
-                // 高度不够时退到紧凑版
-                leftColumn(width: leftWidth, compact: true)
+                leftColumn(width: leftWidth, coverSide: 200, compact: false)
+                leftColumn(width: leftWidth, coverSide: 170, compact: false)
+                leftColumn(width: leftWidth, coverSide: 140, compact: true)
+                leftColumn(width: leftWidth, coverSide: 110, compact: true)
+                leftColumn(width: leftWidth, coverSide: 84, compact: true)
             }
             .frame(width: leftWidth)
 
@@ -239,9 +240,9 @@ struct NowPlayingView: View {
     }
 
     /// 左栏：封面 + 歌名/作者 + 进度 + 控件
-    private func leftColumn(width: CGFloat, compact: Bool) -> some View {
+    private func leftColumn(width: CGFloat, coverSide: CGFloat, compact: Bool) -> some View {
         VStack(spacing: compact ? 4 : 8) {
-            landscapeCover(side: min(width - 8, compact ? 150 : 190))
+            landscapeCover(side: min(width - 8, coverSide))
                 .onTapGesture { toggleLyrics() }
 
             if compact {

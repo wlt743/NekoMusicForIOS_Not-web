@@ -78,6 +78,7 @@ struct LibraryView: View {
                     }
                     .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
+            .listRowBackground(Color(.secondarySystemGroupedBackground).opacity(0.62))
             .background { WallpaperBackdrop() }
                     .refreshable { await loadFavorites() }
                 }

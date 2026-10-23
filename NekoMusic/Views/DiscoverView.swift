@@ -98,6 +98,7 @@ struct DiscoverView: View {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
+            .listRowBackground(Color(.secondarySystemGroupedBackground).opacity(0.62))
         }
     }
 

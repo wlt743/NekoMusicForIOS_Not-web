@@ -124,6 +124,7 @@ struct ProfileView: View {
             }
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
+            .listRowBackground(Color(.secondarySystemGroupedBackground).opacity(0.62))
             .background { WallpaperBackdrop() }
             .navigationTitle("我的")
         }

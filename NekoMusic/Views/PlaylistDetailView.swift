@@ -11,6 +11,11 @@ struct PlaylistDetailView: View {
     @State private var musics: [Music] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
+    @State private var isFavorite = false
+    @State private var favoriteLoaded = false
+    @State private var showEdit = false
+    @State private var actionMessage = ""
+    @State private var showActionMessage = false
 
     private var displayName: String {
         detail?.name ?? playlistName
@@ -89,6 +94,41 @@ struct PlaylistDetailView: View {
         }
         .navigationTitle(displayName)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Task { await toggleFavorite() }
+                } label: {
+                    Image(systemName: isFavorite ? "bookmark.fill" : "bookmark")
+                }
+                .accessibilityLabel(isFavorite ? "取消收藏歌单" : "收藏歌单")
+            }
+
+            if isOwnPlaylist {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showEdit = true
+                    } label: {
+                        Image(systemName: "pencil")
+                    }
+                    .accessibilityLabel("编辑歌单")
+                }
+            }
+        }
+        .sheet(isPresented: $showEdit) {
+            PlaylistEditSheet(
+                playlistId: playlistId,
+                initialName: displayName,
+                initialDescription: detail?.description ?? ""
+            ) {
+                Task { await loadPlaylistMusic() }
+            }
+        }
+        .alert("提示", isPresented: $showActionMessage) {
+            Button("确定") {}
+        } message: {
+            Text(actionMessage)
+        }
         .refreshable {
             await loadPlaylistMusic()
         }
@@ -131,6 +171,31 @@ struct PlaylistDetailView: View {
         }
     }
 
+    private var isOwnPlaylist: Bool {
+        guard let detail = detail, let me = authService.currentUser?.id else { return false }
+        return detail.userId == me
+    }
+
+    private func toggleFavorite() async {
+        guard let token = authService.token else {
+            actionMessage = "请先登录"
+            showActionMessage = true
+            return
+        }
+        do {
+            if isFavorite {
+                try await FavoritePlaylistService.shared.remove(playlistId: playlistId, token: token)
+                isFavorite = false
+            } else {
+                try await FavoritePlaylistService.shared.add(playlistId: playlistId, token: token)
+                isFavorite = true
+            }
+        } catch {
+            actionMessage = error.localizedDescription
+            showActionMessage = true
+        }
+    }
+
     private func loadPlaylistMusic() async {
         isLoading = true
         errorMessage = nil
@@ -144,7 +209,13 @@ struct PlaylistDetailView: View {
             }
         }
 
-        // 2. 曲目列表
+        // 2. 是否已收藏（登录才查）
+        if !favoriteLoaded, let token = authService.token {
+            isFavorite = await FavoritePlaylistService.shared.isFavorite(playlistId: playlistId, token: token)
+            favoriteLoaded = true
+        }
+
+        // 3. 曲目列表
         do {
             let response: PlaylistMusicListResponse = try await NetworkService.shared.get(
                 url: APIConfig.playlistMusicURL(id: playlistId),
@@ -182,6 +253,117 @@ struct PlaylistDetailView: View {
                 self.errorMessage = error.localizedDescription
                 self.isLoading = false
             }
+        }
+    }
+}
+
+
+// MARK: - 歌单编辑
+
+struct PlaylistEditSheet: View {
+    @EnvironmentObject var authService: AuthService
+    @Environment(\.dismiss) private var dismiss
+
+    let playlistId: Int
+    let initialName: String
+    let initialDescription: String
+    var onSaved: () -> Void
+
+    @State private var name = ""
+    @State private var description = ""
+    @State private var isSaving = false
+    @State private var message = ""
+    @State private var showMessage = false
+    @State private var succeeded = false
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("歌单名称", text: $name)
+                    TextField("描述（可选）", text: $description, axis: .vertical)
+                        .lineLimit(2...4)
+                } footer: {
+                    Text("名称最多 255 字，描述最多 500 字。")
+                }
+
+                Section {
+                    Button {
+                        Task { await save() }
+                    } label: {
+                        HStack {
+                            Spacer()
+                            if isSaving {
+                                ProgressView()
+                            } else {
+                                Text("保存").fontWeight(.semibold)
+                            }
+                            Spacer()
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(isSaving)
+                    .listRowBackground(Color.clear)
+                }
+            }
+            .navigationTitle("编辑歌单")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("取消") { dismiss() }
+                }
+            }
+            .task {
+                if name.isEmpty {
+                    name = initialName
+                    description = initialDescription
+                }
+            }
+            .alert(succeeded ? "已保存" : "提示", isPresented: $showMessage) {
+                if succeeded {
+                    Button("好") {
+                        onSaved()
+                        dismiss()
+                    }
+                } else {
+                    Button("确定") {}
+                }
+            } message: {
+                Text(message)
+            }
+        }
+    }
+
+    private func save() async {
+        guard let token = authService.token else {
+            message = "请先登录"
+            showMessage = true
+            return
+        }
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            message = "歌单名称不能为空"
+            showMessage = true
+            return
+        }
+
+        isSaving = true
+        defer { isSaving = false }
+
+        do {
+            _ = try await PlaylistEditService.shared.update(
+                playlistId: playlistId,
+                name: trimmed,
+                description: description.trimmingCharacters(in: .whitespacesAndNewlines),
+                token: token
+            )
+            succeeded = true
+            message = "歌单已更新"
+            showMessage = true
+        } catch {
+            message = error.localizedDescription
+            showMessage = true
         }
     }
 }

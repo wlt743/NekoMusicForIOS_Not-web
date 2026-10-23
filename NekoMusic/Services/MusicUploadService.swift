@@ -30,6 +30,18 @@ final class MusicUploadService {
         let data: Data
     }
 
+    /// 我上传且审核通过的音乐
+    func uploadedMusic(token: String) async throws -> [UploadedMusic] {
+        let response: UploadedMusicResponse = try await network.get(
+            url: APIConfig.uploadedMusicURL(),
+            token: token
+        )
+        guard response.success else {
+            throw NetworkError.serverError(response.message ?? "获取上传列表失败")
+        }
+        return response.musicList ?? []
+    }
+
     func upload(
         title: String,
         artist: String,

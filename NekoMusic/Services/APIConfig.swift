@@ -117,6 +117,20 @@ enum APIConfig {
     static func playlistAddMusicURL() -> String { "\(baseURL)/api/user/playlist/music/add" }
     static func playlistRemoveMusicURL() -> String { "\(baseURL)/api/user/playlist/music/remove" }
 
+    // MARK: - 收藏歌单
+    static func favoritePlaylistsURL() -> String { "\(baseURL)/api/user/favorite-playlists" }
+    static func favoritePlaylistURL(id: Int) -> String { "\(baseURL)/api/user/favorite-playlists/\(id)" }
+
+    // MARK: - 歌单编辑
+    static func playlistUpdateURL() -> String { "\(baseURL)/api/user/playlist/update" }
+
+    // MARK: - 我上传的音乐
+    static func uploadedMusicURL() -> String { "\(baseURL)/api/user/uploaded-music" }
+
+    // MARK: - 扫码登录
+    static func qrScanURL() -> String { "\(baseURL)/api/user/qrlogin/scan" }
+    static func qrConfirmURL() -> String { "\(baseURL)/api/user/qrlogin/confirm" }
+
     // MARK: - Comments API
     static func commentsURL(musicId: Int, page: Int = 1, pageSize: Int = 20) -> String {
         "\(baseURL)/api/comments?musicId=\(musicId)&page=\(page)&pageSize=\(pageSize)"

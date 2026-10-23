@@ -29,6 +29,8 @@
 		<string>mqqapi</string>
 		<string>twitter</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>扫描电脑上的登录二维码，用于确认登录</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSSupportsLiveActivitiesFrequentUpdates</key>

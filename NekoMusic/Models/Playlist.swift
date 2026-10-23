@@ -85,17 +85,74 @@ struct FavoriteResponse: Codable {
     let message: String
 }
 
-struct FavoritePlaylistInfo: Codable, Identifiable {
+
+// MARK: - 收藏歌单
+
+struct PlaylistCreator: Codable {
+    let id: Int
+    let nickname: String
+}
+
+struct FavoritePlaylist: Codable, Identifiable {
     let id: Int
     let name: String
     let description: String?
     let musicCount: Int
-    let createdAt: Int?
-    let updatedAt: Int?
-    let favoriteTime: Int?
+    let createdAt: Double?
+    let updatedAt: Double?
+    let favoriteTime: Double?
+    let creator: PlaylistCreator?
 }
 
 struct FavoritePlaylistListResponse: Codable {
     let success: Bool
-    let playlists: [FavoritePlaylistInfo]
+    let message: String?
+    let playlists: [FavoritePlaylist]?
+}
+
+struct FavoritePlaylistMusic: Codable, Identifiable {
+    let id: Int
+    let title: String
+    let artist: String
+    let album: String?
+    let duration: Int?
+    let maxQuality: String?
+    let filename: String?
+    let position: Int?
+}
+
+struct FavoritePlaylistMusicResponse: Codable {
+    let success: Bool
+    let message: String?
+    let music: [FavoritePlaylistMusic]?
+}
+
+// MARK: - 歌单编辑
+
+struct PlaylistUpdateResponse: Codable {
+    let success: Bool
+    let message: String?
+    let playlist: PlaylistInfo?
+}
+
+// MARK: - 我上传的音乐
+
+struct UploadedMusic: Codable, Identifiable {
+    let id: Int
+    let title: String
+    let artist: String
+    let album: String?
+    let duration: Int?
+    let language: String?
+    let tags: String?
+    let fileFormat: String?
+    let maxQuality: String?
+    let createdAt: String?
+}
+
+struct UploadedMusicResponse: Codable {
+    let success: Bool
+    let message: String?
+    let total: Int?
+    let musicList: [UploadedMusic]?
 }

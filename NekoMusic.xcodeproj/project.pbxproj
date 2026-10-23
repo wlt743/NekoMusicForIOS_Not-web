@@ -53,6 +53,11 @@
 		B1000063 /* LyricActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000050 /* LyricActivityAttributes.swift */; };
 		B1000070 /* NekoMusicWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = B2000054 /* NekoMusicWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B1000080 /* LyricLiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000060 /* LyricLiveActivityManager.swift */; };
+		B1000090 /* FavoritePlaylistService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000090 /* FavoritePlaylistService.swift */; };
+		B1000091 /* PlaylistEditService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000091 /* PlaylistEditService.swift */; };
+		B1000092 /* FavoritePlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000092 /* FavoritePlaylistsView.swift */; };
+		B1000093 /* UploadedMusicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000093 /* UploadedMusicView.swift */; };
+		B1000094 /* QRLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000094 /* QRLoginView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -104,6 +109,11 @@
 		B2000053 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B2000054 /* NekoMusicWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NekoMusicWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2000060 /* LyricLiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricLiveActivityManager.swift; sourceTree = "<group>"; };
+		B2000090 /* FavoritePlaylistService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritePlaylistService.swift; sourceTree = "<group>"; };
+		B2000091 /* PlaylistEditService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistEditService.swift; sourceTree = "<group>"; };
+		B2000092 /* FavoritePlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritePlaylistsView.swift; sourceTree = "<group>"; };
+		B2000093 /* UploadedMusicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadedMusicView.swift; sourceTree = "<group>"; };
+		B2000094 /* QRLoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRLoginView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -189,6 +199,8 @@
 				B2000037 /* AppearanceSettings.swift */,
 				B2000039 /* BlacklistService.swift */,
 				B2000060 /* LyricLiveActivityManager.swift */,
+				B2000090 /* FavoritePlaylistService.swift */,
+				B2000091 /* PlaylistEditService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -217,6 +229,9 @@
 				B2000038 /* AppearanceView.swift */,
 				B2000040 /* BlacklistView.swift */,
 				B2000041 /* SharePanelView.swift */,
+				B2000092 /* FavoritePlaylistsView.swift */,
+				B2000093 /* UploadedMusicView.swift */,
+				B2000094 /* QRLoginView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -396,6 +411,11 @@
 				B1000041 /* SharePanelView.swift in Sources */,
 				B1000063 /* LyricActivityAttributes.swift in Sources */,
 				B1000080 /* LyricLiveActivityManager.swift in Sources */,
+				B1000090 /* FavoritePlaylistService.swift in Sources */,
+				B1000091 /* PlaylistEditService.swift in Sources */,
+				B1000092 /* FavoritePlaylistsView.swift in Sources */,
+				B1000093 /* UploadedMusicView.swift in Sources */,
+				B1000094 /* QRLoginView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

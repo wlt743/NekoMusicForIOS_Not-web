@@ -96,10 +96,30 @@ struct ProfileView: View {
                         } label: {
                             Label("我的歌单", systemImage: "music.note.list")
                         }
+
+                        NavigationLink {
+                            FavoritePlaylistsView()
+                        } label: {
+                            Label("收藏歌单", systemImage: "bookmark")
+                        }
+
+                        NavigationLink {
+                            UploadedMusicView()
+                        } label: {
+                            Label("我上传的音乐", systemImage: "arrow.up.circle")
+                        }
                     }
                 }
 
                 Section("其他") {
+                    if authService.isLoggedIn {
+                        NavigationLink {
+                            QRLoginView()
+                        } label: {
+                            Label("扫码登录（给电脑用）", systemImage: "qrcode.viewfinder")
+                        }
+                    }
+
                     NavigationLink {
                         SettingsView()
                     } label: {

@@ -11,6 +11,8 @@ struct NowPlayingView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                topBar
+
                 Group {
                     if showLyrics {
                         LyricsContentView(
@@ -29,64 +31,19 @@ struct NowPlayingView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.horizontal, 24)
 
                 trackInfo
+                    .padding(.horizontal, 24)
                 progress
+                    .padding(.horizontal, 24)
                 controls
+                    .padding(.horizontal, 24)
             }
             .foregroundStyle(.white)
-            .padding(.horizontal, 24)
             .padding(.bottom, 24)
-            .background {
-                coverBackground
-            }
-            .navigationTitle("正在播放")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .toolbarBackground(.hidden, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.backward")
-                    }
-                    .tint(.white)
-                    .accessibilityLabel("返回")
-                }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showComments = true
-                    } label: {
-                        Image(systemName: "bubble.left.and.bubble.right")
-                    }
-                    .tint(.white)
-                    .disabled(playerService.currentMusic == nil)
-                    .accessibilityLabel("评论")
-                }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        toggleLyrics()
-                    } label: {
-                        Text("词")
-                            .font(.system(size: 17, weight: showLyrics ? .bold : .regular))
-                            .foregroundStyle(showLyrics ? Color.accentColor : Color.white)
-                    }
-                    .accessibilityLabel(showLyrics ? "收起歌词" : "显示歌词")
-                }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.down")
-                    }
-                    .tint(.white)
-                    .accessibilityLabel("收起")
-                }
-            }
+            .background { coverBackground }
+            .toolbar(.hidden, for: .navigationBar)
             .overlay(alignment: .leading) {
                 edgeSwipeArea
             }
@@ -96,6 +53,65 @@ struct NowPlayingView: View {
                 CommentsView(music: music)
             }
         }
+    }
+
+    // MARK: - 顶部栏（自绘，整条毛玻璃，避免系统 bar 出现色块）
+
+    private var topBar: some View {
+        HStack(spacing: 10) {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "chevron.backward")
+                    .font(.system(size: 17, weight: .semibold))
+                    .frame(width: 38, height: 38)
+                    .background(.ultraThinMaterial, in: Circle())
+            }
+            .accessibilityLabel("返回")
+
+            Text("正在播放")
+                .font(.headline)
+                .lineLimit(1)
+
+            Spacer(minLength: 8)
+
+            HStack(spacing: 2) {
+                Button {
+                    showComments = true
+                } label: {
+                    Image(systemName: "bubble.left.and.bubble.right")
+                        .font(.system(size: 17))
+                        .frame(width: 40, height: 38)
+                }
+                .disabled(playerService.currentMusic == nil)
+                .accessibilityLabel("评论")
+
+                Button {
+                    toggleLyrics()
+                } label: {
+                    Text("词")
+                        .font(.system(size: 17, weight: showLyrics ? .bold : .regular))
+                        .foregroundStyle(showLyrics ? Color.accentColor : Color.white)
+                        .frame(width: 40, height: 38)
+                }
+                .accessibilityLabel(showLyrics ? "收起歌词" : "显示歌词")
+
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 17))
+                        .frame(width: 40, height: 38)
+                }
+                .accessibilityLabel("收起")
+            }
+            .padding(.horizontal, 6)
+            .background(.ultraThinMaterial, in: Capsule())
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
+        .background(.ultraThinMaterial, ignoresSafeAreaEdges: .top)
     }
 
     // MARK: - 歌词切换

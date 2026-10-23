@@ -75,17 +75,6 @@ struct NowPlayingView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        showBlockConfirm = true
-                    } label: {
-                        Image(systemName: "hand.raised.slash")
-                    }
-                    .tint(.white)
-                    .disabled(playerService.currentMusic == nil)
-                    .accessibilityLabel("拉黑这首歌")
-                }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
                         showComments = true
                     } label: {
                         Image(systemName: "bubble.left.and.bubble.right")
@@ -107,13 +96,25 @@ struct NowPlayingView: View {
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
+                    Menu {
+                        Button(role: .destructive) {
+                            showBlockConfirm = true
+                        } label: {
+                            Label("拉黑这首歌", systemImage: "hand.raised.slash")
+                        }
+                        .disabled(playerService.currentMusic == nil)
+
+                        Button {
+                            dismiss()
+                        } label: {
+                            Label("收起播放页", systemImage: "chevron.down")
+                        }
                     } label: {
-                        Image(systemName: "chevron.down")
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 17, weight: .semibold))
                     }
                     .tint(.white)
-                    .accessibilityLabel("收起")
+                    .accessibilityLabel("更多")
                 }
             }
             .overlay(alignment: .leading) {

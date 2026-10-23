@@ -11,6 +11,7 @@ struct NowPlayingView: View {
     @State private var isDraggingPage = false
     @State private var showComments = false
     @State private var showBlockConfirm = false
+    @State private var showSharePanel = false
 
     var body: some View {
         NavigationStack {
@@ -76,7 +77,9 @@ struct NowPlayingView: View {
 
                 if isWideLayout {
                     ToolbarItem(placement: .topBarTrailing) {
-                        ShareLink(item: shareText) {
+                        Button {
+                            showSharePanel = true
+                        } label: {
                             Image(systemName: "square.and.arrow.up")
                         }
                         .tint(.white)
@@ -109,7 +112,9 @@ struct NowPlayingView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        ShareLink(item: shareText) {
+                        Button {
+                            showSharePanel = true
+                        } label: {
                             Label("分享这首歌", systemImage: "square.and.arrow.up")
                         }
                         .disabled(playerService.currentMusic == nil)
@@ -142,6 +147,9 @@ struct NowPlayingView: View {
             if let music = playerService.currentMusic {
                 CommentsView(music: music)
             }
+        }
+        .sheet(isPresented: $showSharePanel) {
+            SharePanelView(text: shareText)
         }
         .confirmationDialog("拉黑这首歌？", isPresented: $showBlockConfirm, titleVisibility: .visible) {
             Button("不再播放《\(playerService.currentMusic?.title ?? "")》", role: .destructive) {
@@ -291,7 +299,9 @@ struct NowPlayingView: View {
         .padding(.top, 20)
         .overlay(alignment: .trailing) {
             if !isWideLayout {
-                ShareLink(item: shareText) {
+                Button {
+                    showSharePanel = true
+                } label: {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 19))
                         .foregroundStyle(.white)

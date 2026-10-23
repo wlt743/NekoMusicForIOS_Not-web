@@ -46,6 +46,7 @@
 		B1000038 /* AppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000038 /* AppearanceView.swift */; };
 		B1000039 /* BlacklistService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000039 /* BlacklistService.swift */; };
 		B1000040 /* BlacklistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000040 /* BlacklistView.swift */; };
+		B1000041 /* SharePanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000041 /* SharePanelView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -90,6 +91,7 @@
 		B2000038 /* AppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceView.swift; sourceTree = "<group>"; };
 		B2000039 /* BlacklistService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlacklistService.swift; sourceTree = "<group>"; };
 		B2000040 /* BlacklistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlacklistView.swift; sourceTree = "<group>"; };
+		B2000041 /* SharePanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharePanelView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -178,6 +180,7 @@
 				B2000036 /* MusicUploadView.swift */,
 				B2000038 /* AppearanceView.swift */,
 				B2000040 /* BlacklistView.swift */,
+				B2000041 /* SharePanelView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -298,6 +301,7 @@
 				B1000038 /* AppearanceView.swift in Sources */,
 				B1000039 /* BlacklistService.swift in Sources */,
 				B1000040 /* BlacklistView.swift in Sources */,
+				B1000041 /* SharePanelView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -32,6 +32,7 @@ struct HomeView: View {
                 }
             }
             .navigationTitle("NekoMusic")
+            .toolbarBackground(.hidden, for: .navigationBar)
             .refreshable { await loadData() }
             .task {
                 if rankingMusic.isEmpty && latestMusic.isEmpty {
@@ -59,6 +60,7 @@ struct HomeView: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .listRowBackground(Color.clear)
                     }
                 } header: {
                     sectionHeader(
@@ -108,6 +110,7 @@ struct HomeView: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .listRowBackground(Color.clear)
                     }
                 } header: {
                     sectionHeader(

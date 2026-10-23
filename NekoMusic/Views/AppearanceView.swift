@@ -50,6 +50,31 @@ struct AppearanceView: View {
             }
 
             Section {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text("歌词字号")
+                        Spacer()
+                        Text("\(Int(appearance.lyricFontSize)) pt")
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+
+                    Slider(value: $appearance.lyricFontSize, in: 14...28, step: 1)
+
+                    Text("我们都在寻找属于自己的那片星空")
+                        .font(.system(size: appearance.lyricFontSize))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 4)
+                }
+                .padding(.vertical, 4)
+            } header: {
+                Text("歌词")
+            } footer: {
+                Text("只影响播放页歌词的显示大小，当前行会以高亮白色显示。")
+            }
+
+            Section {
                 if let image = appearance.wallpaperImage {
                     Image(uiImage: image)
                         .resizable()

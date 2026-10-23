@@ -2,6 +2,7 @@ import SwiftUI
 
 struct NowPlayingView: View {
     @EnvironmentObject var playerService: AudioPlayerService
+    @EnvironmentObject var appearance: AppearanceSettings
     @Environment(\.dismiss) private var dismiss
 
     @State private var showLyrics = false
@@ -14,7 +15,8 @@ struct NowPlayingView: View {
                     if showLyrics {
                         LyricsContentView(
                             lyrics: playerService.currentLyrics,
-                            currentPosition: playerService.currentPosition
+                            currentPosition: playerService.currentPosition,
+                            fontSize: appearance.lyricFontSize
                         )
                         .contentShape(Rectangle())
                         .simultaneousGesture(lyricsSwipe)
@@ -41,6 +43,7 @@ struct NowPlayingView: View {
             .navigationTitle("正在播放")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -140,7 +143,7 @@ struct NowPlayingView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .scaleEffect(1.35)
             .blur(radius: 55)
-            .overlay(Color.black.opacity(0.42))
+            .overlay(Color.black.opacity(0.52))
             .clipped()
             .ignoresSafeArea()
             .animation(.easeInOut(duration: 0.35), value: music.id)
@@ -301,6 +304,7 @@ struct NowPlayingView: View {
 struct LyricsContentView: View {
     let lyrics: String
     let currentPosition: TimeInterval
+    var fontSize: Double = 19
 
     private var parsedLyrics: [(time: TimeInterval, text: String)] {
         LyricsParser.parse(lyrics)
@@ -320,17 +324,19 @@ struct LyricsContentView: View {
                         ForEach(Array(parsedLyrics.enumerated()), id: \.offset) { index, line in
                             let isCurrent = index == currentIndex
                             Text(line.text)
-                                .font(isCurrent ? .title3.bold() : .body)
-                                .foregroundStyle(isCurrent ? Color.primary : Color.secondary)
+                                .font(.system(size: fontSize, weight: .regular))
+                                .foregroundStyle(isCurrent ? Color.white : Color.white.opacity(0.38))
+                                .shadow(color: .black.opacity(0.5), radius: 8, y: 1)
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 4)
+                                .padding(.vertical, 5)
                                 .id(index)
                                 .animation(.easeInOut(duration: 0.25), value: isCurrent)
                         }
                     }
                     .padding(.vertical, 140)
                 }
+                .modifier(NoTopScrollEdgeEffect())
                 .onAppear {
                     scrollToCurrent(proxy, animated: false)
                 }
@@ -351,6 +357,19 @@ struct LyricsContentView: View {
             }
         } else {
             proxy.scrollTo(index, anchor: .center)
+        }
+    }
+}
+
+
+/// iOS 26 的滚动边缘效果会在内容滚到导航栏下方时给 bar 加背景，
+/// 播放页是全屏模糊背景，这里关掉顶部效果避免出现色块。
+private struct NoTopScrollEdgeEffect: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.scrollEdgeEffectStyle(nil, for: .top)
+        } else {
+            content
         }
     }
 }

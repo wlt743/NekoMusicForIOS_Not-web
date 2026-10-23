@@ -32,11 +32,17 @@ final class AppearanceSettings: ObservableObject {
         didSet { UserDefaults.standard.set(themeID, forKey: Keys.theme) }
     }
 
+    /// 歌词字号（14–28pt）
+    @Published var lyricFontSize: Double {
+        didSet { UserDefaults.standard.set(lyricFontSize, forKey: Keys.lyricFontSize) }
+    }
+
     @Published private(set) var wallpaperImage: UIImage?
 
     private enum Keys {
         static let theme = "appearance.themeID"
         static let wallpaper = "appearance.wallpaperFile"
+        static let lyricFontSize = "appearance.lyricFontSize"
     }
 
     private var wallpaperFileName: String? {
@@ -52,6 +58,8 @@ final class AppearanceSettings: ObservableObject {
 
     private init() {
         themeID = UserDefaults.standard.string(forKey: Keys.theme) ?? ThemeOption.fallback.id
+        let savedSize = UserDefaults.standard.double(forKey: Keys.lyricFontSize)
+        lyricFontSize = savedSize >= 14 ? savedSize : 19
         wallpaperImage = Self.loadWallpaper(named: UserDefaults.standard.string(forKey: Keys.wallpaper))
     }
 

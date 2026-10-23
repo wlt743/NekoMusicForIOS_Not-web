@@ -218,6 +218,7 @@ struct PlaylistsView: View {
     @State private var showCreateAlert = false
     @State private var newPlaylistName = ""
     @State private var isCreating = false
+    @State private var pendingDelete: PlaylistInfo?
     @State private var errorMessage = ""
     @State private var showError = false
 
@@ -252,6 +253,13 @@ struct PlaylistsView: View {
                                 Image(systemName: "music.note.list")
                             }
                         }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                pendingDelete = playlist
+                            } label: {
+                                Label("删除", systemImage: "trash")
+                            }
+                        }
                     }
                 }
                 .listStyle(.insetGrouped)
@@ -266,6 +274,22 @@ struct PlaylistsView: View {
                     Label("创建歌单", systemImage: "plus")
                 }
             }
+        }
+        .confirmationDialog(
+            "删除歌单",
+            isPresented: Binding(
+                get: { pendingDelete != nil },
+                set: { if !$0 { pendingDelete = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: pendingDelete
+        ) { playlist in
+            Button("删除《\(playlist.name)》", role: .destructive) {
+                Task { await deletePlaylist(playlist) }
+            }
+            Button("取消", role: .cancel) { pendingDelete = nil }
+        } message: { playlist in
+            Text("会连带删除歌单里的 \(playlist.musicCount) 首曲目关联，歌曲本身不受影响，且不可恢复。")
         }
         .alert("创建歌单", isPresented: $showCreateAlert) {
             TextField("歌单名称", text: $newPlaylistName)
@@ -321,6 +345,35 @@ struct PlaylistsView: View {
                 self.errorMessage = error.localizedDescription
                 self.showError = true
             }
+        }
+    }
+
+    private func deletePlaylist(_ playlist: PlaylistInfo) async {
+        guard let token = authService.token else { return }
+
+        struct DeleteRequest: Codable {
+            let id: Int
+        }
+
+        do {
+            let response: PlaylistResponse = try await NetworkService.shared.post(
+                url: APIConfig.playlistDeleteURL(),
+                body: DeleteRequest(id: playlist.id),
+                token: token
+            )
+            if response.success {
+                pendingDelete = nil
+                await loadPlaylists()
+                NotificationCenter.default.post(name: .playlistsDidChange, object: nil)
+            } else {
+                errorMessage = response.message ?? "删除失败"
+                showError = true
+                pendingDelete = nil
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+            showError = true
+            pendingDelete = nil
         }
     }
 

@@ -417,7 +417,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = 8L5RMA2CJS;
+				DEVELOPMENT_TEAM = B9N6W9S7D8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NekoMusic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NekoMusic;
@@ -432,7 +432,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.neko.music.ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wlt743.nekomusic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -447,7 +447,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = 8L5RMA2CJS;
+				DEVELOPMENT_TEAM = B9N6W9S7D8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NekoMusic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NekoMusic;
@@ -462,7 +462,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.neko.music.ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wlt743.nekomusic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

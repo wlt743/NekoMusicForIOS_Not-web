@@ -13,9 +13,14 @@ final class LyricLiveActivityManager {
     private var pendingState: LyricActivityAttributes.ContentState?
     private var isUpdating = false
 
+    /// 总开关：Widget 扩展仍保留，但默认不创建活动。
+    /// 原因：Live Activity 的 4KB 状态上限 + 系统节流，封面和歌词同步都不稳定。
+    static let isEnabled = false
+
     private init() {}
 
     func start(title: String, artist: String, artworkData: Data?) {
+        guard Self.isEnabled else { return }
         guard #available(iOS 16.1, *) else { return }
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
         guard activity == nil else { return }

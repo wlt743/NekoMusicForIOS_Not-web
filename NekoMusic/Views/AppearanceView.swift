@@ -77,8 +77,6 @@ struct AppearanceView: View {
                 }
                 .padding(.vertical, 6)
 
-                Divider()
-
                 ColorPicker(
                     selection: Binding(
                         get: { appearance.customColor },

@@ -3,7 +3,9 @@ import SwiftUI
 struct NowPlayingView: View {
     @EnvironmentObject var playerService: AudioPlayerService
     @EnvironmentObject var appearance: AppearanceSettings
-    @Environment(\.dismiss) private var dismiss
+    @Binding var isPresented: Bool
+    /// 由外部容器显式传入，旋转时才会更新（内部 GeometryReader 在层级里可能拿到 0）
+    var containerSize: CGSize = .zero
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
 
@@ -17,13 +19,15 @@ struct NowPlayingView: View {
     var body: some View {
         NavigationStack {
             GeometryReader { geo in
-                let isLandscape = verticalSizeClass == .compact
-                    || geo.size.width > geo.size.height * 1.1
+                let size = containerSize.width > 0 ? containerSize : geo.size
+                let isLandscape = size.width > size.height
                 Group {
                     if isLandscape {
-                        landscapeLayout(width: geo.size.width, height: geo.size.height)
+                        landscapeLayout(width: size.width, height: size.height)
+
                     } else {
                         portraitLayout
+
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -53,7 +57,7 @@ struct NowPlayingView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        dismiss()
+                        close()
                     } label: {
                         Image(systemName: "chevron.backward")
                     }
@@ -113,7 +117,7 @@ struct NowPlayingView: View {
                         .disabled(playerService.currentMusic == nil)
 
                         Button {
-                            dismiss()
+                            close()
                         } label: {
                             Label("收起播放页", systemImage: "chevron.down")
                         }
@@ -196,12 +200,13 @@ struct NowPlayingView: View {
     // MARK: - 横屏布局（左封面 / 右信息与控制，参考 Apple Music）
 
     private func landscapeLayout(width: CGFloat, height: CGFloat) -> some View {
-        HStack(alignment: .center, spacing: 28) {
-            coverPage
-                .frame(width: min(width * 0.42, height * 0.82), height: min(width * 0.42, height * 0.82))
+        let side = min(width * 0.40, height - 40)
+
+        return HStack(alignment: .center, spacing: 32) {
+            landscapeCover(side: side)
                 .onTapGesture { toggleLyrics() }
 
-            VStack(spacing: 16) {
+            VStack(spacing: 14) {
                 if lyricProgress > 0.5 {
                     lyricsPage
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -214,11 +219,40 @@ struct NowPlayingView: View {
                 progress
                 controls
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .padding(.horizontal, 36)
-        .padding(.top, 8)
-        .padding(.bottom, 18)
+        .padding(.horizontal, 32)
+        .padding(.top, 6)
+        .padding(.bottom, 14)
+    }
+
+    /// 横屏专用封面：固定尺寸，不带宽高自适应 Spacer
+    @ViewBuilder
+    private func landscapeCover(side: CGFloat) -> some View {
+        if let music = playerService.currentMusic {
+            RemoteImage(
+                url: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath)
+            ) { image in
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } placeholder: {
+                Rectangle()
+                    .fill(Color(.secondarySystemFill))
+                    .overlay {
+                        Image(systemName: "music.note")
+                            .font(.system(size: 44))
+                            .foregroundStyle(.secondary)
+                    }
+            }
+            .frame(width: side, height: side)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .shadow(color: .black.opacity(0.35), radius: 20, x: 0, y: 8)
+        } else {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(.secondarySystemFill))
+                .frame(width: side, height: side)
+        }
     }
 
     // MARK: - 两页
@@ -239,6 +273,10 @@ struct NowPlayingView: View {
     }
 
     // MARK: - 歌词切换
+
+    private func close() {
+        isPresented = false
+    }
 
     private func toggleLyrics() {
         let target: CGFloat = lyricProgress > 0.5 ? 0 : 1
@@ -446,7 +484,7 @@ struct NowPlayingView: View {
                 DragGesture(minimumDistance: 12)
                     .onEnded { value in
                         if value.translation.width > 60 {
-                            dismiss()
+                            close()
                         }
                     }
             )

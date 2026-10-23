@@ -7,6 +7,35 @@ struct ContentView: View {
     @State private var showNowPlaying = false
 
     var body: some View {
+        GeometryReader { proxy in
+            ZStack {
+                mainContent
+
+                if showNowPlaying {
+                    NowPlayingView(isPresented: $showNowPlaying, containerSize: proxy.size)
+                        .environmentObject(playerService)
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        .transition(.move(edge: .bottom))
+                        .zIndex(2)
+                }
+            }
+        }
+        .animation(.easeInOut(duration: 0.28), value: showNowPlaying)
+        .onChange(of: playerService.presentNowPlaying) { value in
+            guard value else { return }
+            showNowPlaying = true
+            playerService.presentNowPlaying = false
+        }
+        .task(id: authService.isLoggedIn) {
+            if authService.isLoggedIn, let token = authService.token {
+                NotificationService.shared.startStream(token: token)
+            } else {
+                NotificationService.shared.stopStream()
+            }
+        }
+    }
+
+    private var mainContent: some View {
         Group {
             if #available(iOS 26.1, *) {
                 tabs.tabViewBottomAccessory(isEnabled: playerService.currentMusic != nil) {
@@ -26,22 +55,6 @@ struct ContentView: View {
                             .padding(.bottom, 4)
                     }
                 }
-            }
-        }
-        .fullScreenCover(isPresented: $showNowPlaying) {
-                NowPlayingView()
-                    .environmentObject(playerService)
-            }
-        .onChange(of: playerService.presentNowPlaying) { value in
-            guard value else { return }
-            showNowPlaying = true
-            playerService.presentNowPlaying = false
-        }
-        .task(id: authService.isLoggedIn) {
-            if authService.isLoggedIn, let token = authService.token {
-                NotificationService.shared.startStream(token: token)
-            } else {
-                NotificationService.shared.stopStream()
             }
         }
     }

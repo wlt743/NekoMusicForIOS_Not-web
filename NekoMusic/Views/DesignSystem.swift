@@ -207,6 +207,7 @@ struct MusicRow: View {
 /// 主 Tab 的列表需要同时设置 `.scrollContentBackground(.hidden)` 才能透出来。
 struct WallpaperBackdrop: View {
     @EnvironmentObject var appearance: AppearanceSettings
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         GeometryReader { proxy in
@@ -216,7 +217,11 @@ struct WallpaperBackdrop: View {
                     .scaledToFill()
                     .frame(width: proxy.size.width, height: proxy.size.height)
                     .clipped()
-                    .overlay(.ultraThinMaterial)
+                    .blur(radius: 1.5)
+                    .overlay(
+                        Color(.systemBackground)
+                            .opacity(colorScheme == .dark ? 0.58 : 0.38)
+                    )
                     .ignoresSafeArea()
             } else {
                 Color(.systemBackground)

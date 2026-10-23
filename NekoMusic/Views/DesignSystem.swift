@@ -201,3 +201,28 @@ struct MusicRow: View {
         .contentShape(Rectangle())
     }
 }
+
+
+/// 全 App 背景：有壁纸时铺壁纸 + 毛玻璃，否则用系统背景。
+/// 主 Tab 的列表需要同时设置 `.scrollContentBackground(.hidden)` 才能透出来。
+struct WallpaperBackdrop: View {
+    @EnvironmentObject var appearance: AppearanceSettings
+
+    var body: some View {
+        GeometryReader { proxy in
+            if let image = appearance.wallpaperImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: proxy.size.width, height: proxy.size.height)
+                    .clipped()
+                    .overlay(.ultraThinMaterial)
+                    .ignoresSafeArea()
+            } else {
+                Color(.systemBackground)
+                    .ignoresSafeArea()
+            }
+        }
+        .ignoresSafeArea()
+    }
+}

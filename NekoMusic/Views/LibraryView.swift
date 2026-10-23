@@ -77,6 +77,7 @@ struct LibraryView: View {
                         }
                     }
                     .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
                     .refreshable { await loadFavorites() }
                 }
             }

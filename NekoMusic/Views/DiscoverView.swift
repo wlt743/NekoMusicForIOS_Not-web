@@ -96,6 +96,7 @@ struct DiscoverView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
         }
     }
 

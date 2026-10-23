@@ -123,6 +123,7 @@ struct ProfileView: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
             .navigationTitle("我的")
         }
         .sheet(isPresented: $showLogin) {

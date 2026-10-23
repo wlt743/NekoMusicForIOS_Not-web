@@ -154,9 +154,9 @@ struct HomeView: View {
             let (rankingResult, latestResult, dailyResult) = try await (ranking, latest, daily)
 
             await MainActor.run {
-                self.rankingMusic = rankingResult
-                self.latestMusic = latestResult
-                self.dailyMusic = dailyResult
+                self.rankingMusic = BlacklistService.shared.filter(rankingResult)
+                self.latestMusic = BlacklistService.shared.filter(latestResult)
+                self.dailyMusic = BlacklistService.shared.filter(dailyResult)
                 self.isLoading = false
             }
         } catch {

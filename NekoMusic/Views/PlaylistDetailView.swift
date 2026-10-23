@@ -168,7 +168,7 @@ struct PlaylistDetailView: View {
                     )
                 }
                 await MainActor.run {
-                    self.musics = converted
+                    self.musics = BlacklistService.shared.filter(converted)
                     self.isLoading = false
                 }
             } else {

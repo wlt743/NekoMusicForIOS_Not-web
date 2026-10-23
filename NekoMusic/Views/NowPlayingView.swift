@@ -9,6 +9,7 @@ struct NowPlayingView: View {
     @State private var dragStartProgress: CGFloat = 0
     @State private var isDraggingPage = false
     @State private var showComments = false
+    @State private var showBlockConfirm = false
 
     var body: some View {
         NavigationStack {
@@ -74,6 +75,17 @@ struct NowPlayingView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
+                        showBlockConfirm = true
+                    } label: {
+                        Image(systemName: "hand.raised.slash")
+                    }
+                    .tint(.white)
+                    .disabled(playerService.currentMusic == nil)
+                    .accessibilityLabel("拉黑这首歌")
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
                         showComments = true
                     } label: {
                         Image(systemName: "bubble.left.and.bubble.right")
@@ -113,6 +125,20 @@ struct NowPlayingView: View {
                 CommentsView(music: music)
             }
         }
+        .confirmationDialog("拉黑这首歌？", isPresented: $showBlockConfirm, titleVisibility: .visible) {
+            Button("不再播放《\(playerService.currentMusic?.title ?? "")》", role: .destructive) {
+                blockCurrent()
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("拉黑后这首歌会从推荐、搜索、歌单和收藏里隐藏，并跳过播放。只保存在本机。")
+        }
+    }
+
+    private func blockCurrent() {
+        guard let music = playerService.currentMusic else { return }
+        BlacklistService.shared.block(music)
+        playerService.next()
     }
 
     // MARK: - 两页

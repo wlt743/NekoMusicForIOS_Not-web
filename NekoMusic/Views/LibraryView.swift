@@ -127,13 +127,15 @@ struct FavoritesView: View {
     @State private var isLoading = true
 
     private var musics: [Music] {
-        favorites.map { fav in
-            Music(
-                id: fav.id, title: fav.title, artist: fav.artist, album: fav.album,
-                duration: fav.duration, filePath: nil, coverFilePath: fav.cover,
-                uploadUserId: nil, createdAt: nil, playCount: nil, lrc: nil
-            )
-        }
+        BlacklistService.shared.filter(
+            favorites.map { fav in
+                Music(
+                    id: fav.id, title: fav.title, artist: fav.artist, album: fav.album,
+                    duration: fav.duration, filePath: nil, coverFilePath: fav.cover,
+                    uploadUserId: nil, createdAt: nil, playCount: nil, lrc: nil
+                )
+            }
+        )
     }
 
     var body: some View {

@@ -232,6 +232,14 @@ struct SettingsView: View {
                 }
             }
 
+            Section("内容") {
+                NavigationLink {
+                    BlacklistView()
+                } label: {
+                    Label("黑名单", systemImage: "hand.raised.slash")
+                }
+            }
+
             Section("信息") {
                 LabeledContent("版本", value: appVersion)
             }

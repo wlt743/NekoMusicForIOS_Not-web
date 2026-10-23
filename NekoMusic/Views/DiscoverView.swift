@@ -139,7 +139,7 @@ struct DiscoverView: View {
         }
 
         await MainActor.run {
-            self.searchResults = songs
+            self.searchResults = BlacklistService.shared.filter(songs)
             self.searchPlaylists = playlists
             self.errorMessage = failure
             self.isSearching = false

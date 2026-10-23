@@ -199,31 +199,159 @@ struct NowPlayingView: View {
 
     // MARK: - 横屏布局（左封面 / 右信息与控制，参考 Apple Music）
 
-    private func landscapeLayout(width: CGFloat, height: CGFloat) -> some View {
-        let side = min(width * 0.40, height - 40)
+    // MARK: - 布局模式（按 Size Class 选，后续折叠屏/iPad 自动走 wide）
 
-        return HStack(alignment: .center, spacing: 32) {
-            landscapeCover(side: side)
+    private enum PlayerLayoutMode {
+        case portrait
+        case landscape
+        case wide
+    }
+
+    private var layoutMode: PlayerLayoutMode {
+        // iPad / 折叠屏展开：横向空间充裕
+        if horizontalSizeClass == .regular { return .wide }
+        // iPhone 横屏：垂直方向被压扁
+        if verticalSizeClass == .compact { return .landscape }
+        return .portrait
+    }
+
+    // MARK: - 横屏
+
+    private func landscapeLayout(width: CGFloat, height: CGFloat) -> some View {
+        // 用相对比例给左栏定宽，具体内容能否放下交给 ViewThatFits
+        let leftWidth = min(width * 0.46, height * 1.1)
+
+        return HStack(spacing: 24) {
+            ViewThatFits(in: .vertical) {
+                // 首选：完整信息 + 完整控件
+                leftColumn(width: leftWidth, compact: false)
+
+                // 高度不够时退到紧凑版
+                leftColumn(width: leftWidth, compact: true)
+            }
+            .frame(width: leftWidth)
+
+            lyricsPage
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 4)
+    }
+
+    /// 左栏：封面 + 歌名/作者 + 进度 + 控件
+    private func leftColumn(width: CGFloat, compact: Bool) -> some View {
+        VStack(spacing: compact ? 4 : 8) {
+            landscapeCover(side: min(width - 8, compact ? 150 : 190))
                 .onTapGesture { toggleLyrics() }
 
-            VStack(spacing: 14) {
-                if lyricProgress > 0.5 {
+            if compact {
+                trackInfoCompact
+            } else {
+                trackInfo
+            }
+
+            progress
+
+            if compact {
+                controlsCompact
+            } else {
+                controls
+            }
+        }
+    }
+
+    // MARK: - 宽屏（iPad / 折叠屏展开）
+
+    private func wideLayout(width: CGFloat, height: CGFloat) -> some View {
+        HStack(spacing: 32) {
+            VStack(spacing: 20) {
+                Spacer(minLength: 0)
+                landscapeCover(side: min(width * 0.28, height * 0.62))
+                trackInfo
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: width * 0.38)
+
+            VStack(spacing: 18) {
+                ViewThatFits(in: .vertical) {
                     lyricsPage
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    Spacer(minLength: 0)
                     trackInfo
-                    Spacer(minLength: 0)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 progress
                 controls
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(maxWidth: .infinity)
         }
-        .padding(.horizontal, 32)
-        .padding(.top, 6)
-        .padding(.bottom, 14)
+        .padding(.horizontal, 40)
+        .padding(.vertical, 16)
+    }
+
+    // MARK: - 横屏紧凑组件
+
+    private var trackInfoCompact: some View {
+        VStack(spacing: 3) {
+            Text(playerService.currentMusic?.title ?? "未知歌曲")
+                .font(.headline)
+                .fontWeight(.semibold)
+                .lineLimit(1)
+
+            Text(playerService.currentMusic?.artist ?? "未知歌手")
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.7))
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var controlsCompact: some View {
+        HStack(spacing: 26) {
+            Button {
+                playerService.togglePlayMode()
+            } label: {
+                Image(systemName: playerService.playMode.icon)
+                    .font(.subheadline)
+            }
+            .accessibilityLabel(playerService.playMode.displayName)
+
+            Button {
+                playerService.previous()
+            } label: {
+                Image(systemName: "backward.fill")
+                    .font(.title3)
+            }
+            .accessibilityLabel("上一首")
+
+            Button {
+                playerService.togglePlayPause()
+            } label: {
+                Image(systemName: playerService.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                    .font(.system(size: 46))
+                    .symbolRenderingMode(.hierarchical)
+            }
+            .accessibilityLabel(playerService.isPlaying ? "暂停" : "播放")
+
+            Button {
+                playerService.next()
+            } label: {
+                Image(systemName: "forward.fill")
+                    .font(.title3)
+            }
+            .accessibilityLabel("下一首")
+
+            Button {
+                playerService.toggleFavorite()
+            } label: {
+                Image(systemName: playerService.isFavorite ? "heart.fill" : "heart")
+                    .font(.subheadline)
+                    .foregroundStyle(playerService.isFavorite ? Color.accentColor : Color.white)
+            }
+            .accessibilityLabel(playerService.isFavorite ? "取消收藏" : "收藏")
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.white)
+        .padding(.top, 4)
     }
 
     /// 横屏专用封面：固定尺寸，不带宽高自适应 Spacer

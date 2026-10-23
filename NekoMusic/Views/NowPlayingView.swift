@@ -5,6 +5,7 @@ struct NowPlayingView: View {
     @EnvironmentObject var appearance: AppearanceSettings
     @Environment(\.dismiss) private var dismiss
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     @State private var lyricProgress: CGFloat = 0
     @State private var dragStartProgress: CGFloat = 0
@@ -16,7 +17,8 @@ struct NowPlayingView: View {
     var body: some View {
         NavigationStack {
             GeometryReader { geo in
-                let isLandscape = geo.size.width > geo.size.height
+                let isLandscape = verticalSizeClass == .compact
+                    || geo.size.width > geo.size.height * 1.1
                 Group {
                     if isLandscape {
                         landscapeLayout(width: geo.size.width, height: geo.size.height)

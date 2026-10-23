@@ -358,6 +358,9 @@ class AudioPlayerService: ObservableObject {
                     artist: music.artist,
                     artworkData: self.artworkDataCache[music.id]
                 )
+                // 歌词可能比活动先到，补刷一次
+                try? await Task.sleep(nanoseconds: 800_000_000)
+                self.updateNowPlayingInfo()
             }
         }
         duration = 0

@@ -30,34 +30,41 @@ final class LyricLiveActivityManager {
             isPlaying: true
         )
 
+        // 同步创建：异步 Task 会被延迟十几秒，导致歌词更新全部落空
+        do {
+            activity = try Activity.request(
+                attributes: LyricActivityAttributes(title: title, artist: artist),
+                contentState: state,
+                pushType: nil
+            )
+            lastState = state
+            pendingState = nil
+            isUpdating = false
+            NSLog("[NekoLive] started id=%@", activity?.id ?? "nil")
+        } catch {
+            NSLog("[NekoLive] request failed: %@", "\(error)")
+            return
+        }
+
+        // 清理旧活动放到后台，且不碰刚创建的这个
+        let currentID = activity?.id
         Task { @MainActor in
-            // 先收掉残留活动，避免同一时间存在多个
-            for old in Activity<LyricActivityAttributes>.activities {
+            for old in Activity<LyricActivityAttributes>.activities where old.id != currentID {
                 if #available(iOS 16.2, *) {
                     await old.end(nil, dismissalPolicy: .immediate)
                 } else {
                     await old.end(dismissalPolicy: .immediate)
                 }
             }
-
-            do {
-                self.activity = try Activity.request(
-                    attributes: LyricActivityAttributes(title: title, artist: artist),
-                    contentState: state,
-                    pushType: nil
-                )
-                self.lastState = state
-                self.pendingState = nil
-                self.isUpdating = false
-            } catch {
-                NSLog("[NekoLive] request failed: %@", "\(error)")
-            }
         }
     }
 
     func update(title: String, artist: String, artworkData: Data?, previous: String, current: String, next: String, isPlaying: Bool) {
         guard #available(iOS 16.1, *) else { return }
-        guard let activity = activity else { return }
+        guard let activity = activity else {
+            NSLog("[NekoLive] update skipped: no activity")
+            return
+        }
 
         let state = LyricActivityAttributes.ContentState(
             title: title,
@@ -71,6 +78,7 @@ final class LyricLiveActivityManager {
 
         // 内容没变就不打扰系统
         guard state != lastState else { return }
+        NSLog("[NekoLive] update -> %@", current)
         lastState = state
         pendingState = state
 
@@ -87,6 +95,7 @@ final class LyricLiveActivityManager {
             await activity.update(using: state)
         }
         isUpdating = false
+        NSLog("[NekoLive] drained")
     }
 
     /// App 启动时清掉旧版本残留的活动，避免显示过期结构

@@ -11,7 +11,7 @@ struct NowPlayingView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                Group {
+                ZStack {
                     if showLyrics {
                         LyricsContentView(
                             lyrics: playerService.currentLyrics,
@@ -20,15 +20,28 @@ struct NowPlayingView: View {
                         )
                         .contentShape(Rectangle())
                         .simultaneousGesture(lyricsSwipe)
+                        .transition(
+                            .asymmetric(
+                                insertion: .move(edge: .trailing).combined(with: .opacity),
+                                removal: .move(edge: .trailing).combined(with: .opacity)
+                            )
+                        )
                     } else {
                         artwork
                             .onTapGesture { toggleLyrics() }
                             .simultaneousGesture(coverSwipe)
                             .accessibilityAddTraits(.isButton)
                             .accessibilityHint("轻点显示歌词")
+                            .transition(
+                                .asymmetric(
+                                    insertion: .move(edge: .leading).combined(with: .opacity),
+                                    removal: .move(edge: .leading).combined(with: .opacity)
+                                )
+                            )
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
 
                 trackInfo
                 progress
@@ -115,7 +128,7 @@ struct NowPlayingView: View {
     // MARK: - 歌词切换
 
     private func toggleLyrics() {
-        withAnimation(.easeInOut(duration: 0.25)) {
+        withAnimation(.spring(response: 0.38, dampingFraction: 0.86)) {
             showLyrics.toggle()
         }
     }

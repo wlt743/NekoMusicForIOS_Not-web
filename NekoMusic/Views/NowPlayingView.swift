@@ -5,50 +5,40 @@ struct NowPlayingView: View {
     @EnvironmentObject var appearance: AppearanceSettings
     @Environment(\.dismiss) private var dismiss
 
-    @State private var showLyrics = false
+    @State private var lyricProgress: CGFloat = 0
+    @State private var dragStartProgress: CGFloat = 0
+    @State private var isDraggingPage = false
     @State private var showComments = false
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                ZStack {
-                    if showLyrics {
-                        LyricsContentView(
-                            lyrics: playerService.currentLyrics,
-                            currentPosition: playerService.currentPosition,
-                            fontSize: appearance.lyricFontSize
-                        )
-                        .contentShape(Rectangle())
-                        .simultaneousGesture(lyricsSwipe)
-                        .transition(
-                            .asymmetric(
-                                insertion: .move(edge: .trailing).combined(with: .opacity),
-                                removal: .move(edge: .trailing).combined(with: .opacity)
-                            )
-                        )
-                    } else {
-                        artwork
-                            .onTapGesture { toggleLyrics() }
-                            .simultaneousGesture(coverSwipe)
-                            .accessibilityAddTraits(.isButton)
-                            .accessibilityHint("轻点显示歌词")
-                            .transition(
-                                .asymmetric(
-                                    insertion: .move(edge: .leading).combined(with: .opacity),
-                                    removal: .move(edge: .leading).combined(with: .opacity)
-                                )
-                            )
+                GeometryReader { geo in
+                    let width = max(geo.size.width, 1)
+                    ZStack {
+                        coverPage
+                            .offset(x: -lyricProgress * width)
+                            .allowsHitTesting(lyricProgress < 0.5)
+
+                        lyricsPage
+                            .offset(x: (1 - lyricProgress) * width)
+                            .allowsHitTesting(lyricProgress > 0.5)
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contentShape(Rectangle())
+                    .simultaneousGesture(pageDrag(width: width))
+                    .clipped()
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipped()
+                .padding(.horizontal, 24)
 
                 trackInfo
+                    .padding(.horizontal, 24)
                 progress
+                    .padding(.horizontal, 24)
                 controls
+                    .padding(.horizontal, 24)
             }
             .foregroundStyle(.white)
-            .padding(.horizontal, 24)
             .padding(.bottom, 24)
             .background {
                 coverBackground
@@ -98,10 +88,10 @@ struct NowPlayingView: View {
                         toggleLyrics()
                     } label: {
                         Text("词")
-                            .font(.system(size: 17, weight: showLyrics ? .bold : .regular))
-                            .foregroundStyle(showLyrics ? Color.accentColor : Color.white)
+                            .font(.system(size: 17, weight: lyricProgress > 0.5 ? .bold : .regular))
+                            .foregroundStyle(lyricProgress > 0.5 ? Color.accentColor : Color.white)
                     }
-                    .accessibilityLabel(showLyrics ? "收起歌词" : "显示歌词")
+                    .accessibilityLabel(lyricProgress > 0.5 ? "收起歌词" : "显示歌词")
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
@@ -125,30 +115,51 @@ struct NowPlayingView: View {
         }
     }
 
+    // MARK: - 两页
+
+    private var coverPage: some View {
+        artwork
+            .onTapGesture { toggleLyrics() }
+            .accessibilityAddTraits(.isButton)
+            .accessibilityHint("轻点显示歌词")
+    }
+
+    private var lyricsPage: some View {
+        LyricsContentView(
+            lyrics: playerService.currentLyrics,
+            currentPosition: playerService.currentPosition,
+            fontSize: appearance.lyricFontSize
+        )
+    }
+
     // MARK: - 歌词切换
 
     private func toggleLyrics() {
-        withAnimation(.spring(response: 0.38, dampingFraction: 0.86)) {
-            showLyrics.toggle()
+        let target: CGFloat = lyricProgress > 0.5 ? 0 : 1
+        withAnimation(.spring(response: 0.36, dampingFraction: 0.86)) {
+            lyricProgress = target
         }
     }
 
-    /// 封面页向右滑 → 歌词
-    private var coverSwipe: some Gesture {
-        DragGesture(minimumDistance: 30)
-            .onEnded { value in
-                if value.translation.width > 60, abs(value.translation.width) > abs(value.translation.height) {
-                    toggleLyrics()
+    /// 左滑进歌词、右滑回封面；拖动时实时跟随，松手按位移决定
+    private func pageDrag(width: CGFloat) -> some Gesture {
+        DragGesture(minimumDistance: 6)
+            .onChanged { value in
+                guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                if !isDraggingPage {
+                    isDraggingPage = true
+                    dragStartProgress = lyricProgress
                 }
+                let delta = -value.translation.width / width
+                lyricProgress = min(1, max(0, dragStartProgress + delta))
             }
-    }
-
-    /// 歌词页向左滑 → 回到封面
-    private var lyricsSwipe: some Gesture {
-        DragGesture(minimumDistance: 30)
             .onEnded { value in
-                if value.translation.width < -60, abs(value.translation.width) > abs(value.translation.height) {
-                    toggleLyrics()
+                defer { isDraggingPage = false }
+                guard abs(value.translation.width) > abs(value.translation.height) else { return }
+
+                let projected = dragStartProgress - value.predictedEndTranslation.width / width
+                withAnimation(.spring(response: 0.36, dampingFraction: 0.86)) {
+                    lyricProgress = projected > 0.5 ? 1 : 0
                 }
             }
     }

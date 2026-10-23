@@ -76,7 +76,8 @@ struct AppearanceView: View {
                     .buttonStyle(.plain)
                 }
                 .padding(.vertical, 6)
-                .listRowBackground(Color.clear)
+
+                Divider()
 
                 ColorPicker(
                     selection: Binding(

@@ -165,11 +165,9 @@ static let baseURL = "https://music.nekocore.cn"
 
 ---
 
-## 项目文档
+## 更新日志
 
-- [交接说明](docs/HANDOVER.md)：项目来龙去脉、已完成与未完成功能、踩坑记录
-- [开发手记](docs/AI-NOTES.md)：给后续接手的人（或 AI）的经验与约定
-- [更新日志](CHANGELOG.md)
+版本变更见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 免责声明
 

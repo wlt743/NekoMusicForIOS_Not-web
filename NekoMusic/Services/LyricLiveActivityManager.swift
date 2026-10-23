@@ -21,6 +21,8 @@ final class LyricLiveActivityManager {
         guard activity == nil else { return }
 
         let state = LyricActivityAttributes.ContentState(
+            title: title,
+            artist: artist,
             previous: "",
             current: "正在载入歌词…",
             next: "",
@@ -39,11 +41,13 @@ final class LyricLiveActivityManager {
         }
     }
 
-    func update(previous: String, current: String, next: String, isPlaying: Bool) {
+    func update(title: String, artist: String, previous: String, current: String, next: String, isPlaying: Bool) {
         guard #available(iOS 16.1, *) else { return }
         guard let activity = activity else { return }
 
         let state = LyricActivityAttributes.ContentState(
+            title: title,
+            artist: artist,
             previous: previous,
             current: current,
             next: next,

@@ -28,12 +28,12 @@ struct LyricsLiveActivity: Widget {
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     HStack {
-                        Text(context.attributes.title)
+                        Text(context.state.title)
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                         Spacer()
-                        Text(context.attributes.artist)
+                        Text(context.state.artist)
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
@@ -42,7 +42,7 @@ struct LyricsLiveActivity: Widget {
             } compactLeading: {
                 Image(systemName: "music.note")
             } compactTrailing: {
-                Text(context.attributes.title)
+                Text(context.state.title)
                     .font(.caption2)
                     .lineLimit(1)
                     .frame(maxWidth: 70)
@@ -63,13 +63,13 @@ struct LockScreenLyrics: View {
             HStack(spacing: 6) {
                 Image(systemName: "music.note")
                     .font(.caption2)
-                Text(context.attributes.title)
+                Text(context.state.title)
                     .font(.caption)
                     .fontWeight(.medium)
                     .lineLimit(1)
                 Text("·")
                     .font(.caption2)
-                Text(context.attributes.artist)
+                Text(context.state.artist)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)

@@ -218,6 +218,8 @@ class AudioPlayerService: ObservableObject {
         if #available(iOS 16.1, *) {
             Task { @MainActor in
                 LyricLiveActivityManager.shared.update(
+                    title: music.title,
+                    artist: music.artist,
                     previous: neighborhood.previous,
                     current: neighborhood.current,
                     next: neighborhood.next,

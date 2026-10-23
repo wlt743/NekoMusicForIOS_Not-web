@@ -764,3 +764,92 @@ layoutMode:
 ### 放弃的功能
 
 Live Activity（锁屏多行歌词）已关闭 `isEnabled = false`，原因见第 18 节：ContentState 4KB 上限、App Group 需要付费账号、系统节流。
+
+---
+
+## 21. 鸿蒙（HarmonyOS）端：从零开始（2026-10-24 凌晨）
+
+### 环境
+
+| 项 | 值 |
+|---|---|
+| 设备 | M5 Pro / macOS 27.2 / 15 核 / 48GB |
+| DevEco Studio | 26.0.0.851 |
+| 工程 | `~/Documents/deepseek-harness/default-workspace/NekoMusicHarmony` |
+| 包名 | `com.example.nekomusicharmony` |
+| Compatible SDK | 6.1.0(23)（覆盖 96% 设备，targetSdk 26） |
+| 设备类型 | Phone + Tablet |
+| 模拟器 | Pura X Max（可展开折叠屏）+ 另建了一个 phone 模拟器 |
+
+### 命令行构建（不用开 DevEco）
+
+```bash
+cd ~/Documents/deepseek-harness/default-workspace/NekoMusicHarmony
+export PATH=/Applications/DevEco-Studio.app/Contents/tools/node/bin:$PATH
+export DEVECO_SDK_HOME=/Applications/DevEco-Studio.app/Contents/sdk   # 必须是内置 SDK 路径
+hvigorw assembleHap --mode module -p product=default --no-daemon
+
+hdc install entry/build/default/outputs/default/entry-default-unsigned.hap   # 模拟器接受未签名
+hdc shell aa start -a EntryAbility -b com.example.nekomusicharmony
+hdc shell snapshot_display -f /data/local/tmp/x.jpeg && hdc file recv /data/local/tmp/x.jpeg /tmp/x.jpeg
+```
+
+`hdc` 在 `~/Library/OpenHarmony/Sdk/26.0.0/toolchains/hdc`。
+多设备时用 `hdc -t 127.0.0.1:5557 ...`。
+
+### 已完成
+
+- 接口层：`APIConfig` / `HttpClient` / `NonceService`（PoW）/ `MusicService`
+- 首页：推荐 / 最新上架 / 热门排行，卡片式横向滑动
+- 搜索：关键词 + 结果列表 + 点击播放
+- 播放：AVPlayer + 音频地址解析（JSON `data.url`）+ 进度 + 上一首/下一首
+- 歌词：LRC 解析 + 逐行同步 + 全屏歌词页（Swiper 滑动切换 + 「词」按钮）
+- 网络图片：`RemoteImage`（http 带头 → PixelMap → 按 URL 缓存）
+- 沉浸光感：`uiMaterial.ImmersiveMaterial` + `.systemMaterial()`（API 26）
+- 沉浸式窗口：状态栏/导航条透明
+- 壁纸：`WallpaperService`（PhotoViewPicker + Preferences），首页背景显示
+
+### 踩过的坑（重要）
+
+**1. 后端专门拦鸿蒙客户端**
+后端开发者私下说过「发现疑似鸿蒙请求就给他拌脚」。实测确实如此：
+`X-Neko-Client: harmony+3.5.0` 会导致请求变慢/失败，改成 `ios+3.5.0` 后立刻正常。
+**不要改回 harmony 前缀。**
+
+**2. ArkTS 不是 TypeScript**
+- 不允许 `any` / `unknown`
+- **不允许嵌套函数**（`arkts-no-nested-funcs`）——`@Concurrent` 函数里只能用内联代码
+- 不允许 `eval` / 动态属性
+- 对象字面量必须有匹配的 interface
+
+**3. 主线程阻塞 6 秒会被系统杀掉**
+`THREAD_BLOCK_6S`：PoW 计算（几十万次 SHA-256）跑在 UI 线程直接被杀。
+必须用 `taskpool.execute(@Concurrent 函数, ...)` 放后台线程。
+
+**4. nonce 并发会失败**
+点歌时同时发音频解析和歌词两个请求，都要 nonce。池空时第二个请求会拿到空池报错。
+修法：用 `Promise` 追踪正在进行的领取，并发请求等同一个 Promise。
+
+**5. AppStorage / @StorageLink 不响应后台线程更新**
+AVPlayer 的 `stateChange` 回调里 `AppStorage.set` 不会触发 UI 刷新。
+最终方案：`toggle()` 直接返回新状态给页面，页面用 `@State` 更新。
+
+**6. ArkTS 的 Image 不能带请求头**
+`Image(url)` 无法附加 `X-Neko-Client`，会被后端判爬虫 403。
+解法：`RemoteImage` 组件先用 http 拉 ArrayBuffer → `image.createImageSource` → PixelMap。
+
+**7. HDS 组件与材质**
+- `HdsTabs` 是官方底部导航，但 `barFloatingStyle`（悬浮胶囊）在模拟器上不生效
+- 沉浸光感不在 HDS 里，是 `@kit.ArkUI` 的 `uiMaterial.ImmersiveMaterial`
+- 参考实现：GitHub `wbbb0/wPlayer` 的 `AppSystemMaterial.ets`
+
+**8. 模拟器网络延迟 10 秒**
+`ping` 外网 10000ms，点歌加载慢、偶发超时都是这个原因，不是代码问题。真机正常。
+
+### 待办
+
+- 收藏 / 歌单 / 登录 / 评论 / 消息 / VIP / 上传（对齐 iOS）
+- 每日推荐
+- 壁纸相册选择器验证（模拟器没相册应用，点「更换壁纸」没反应）
+- 播放图标状态验证（已改 `toggle()` 返回状态，未最终确认）
+- 横屏 / 折叠屏展开的两栏布局（iOS 端已做）

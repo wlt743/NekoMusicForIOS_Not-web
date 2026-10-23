@@ -32,6 +32,11 @@ struct ContentView: View {
                 NowPlayingView()
                     .environmentObject(playerService)
             }
+        .onChange(of: playerService.presentNowPlaying) { value in
+            guard value else { return }
+            showNowPlaying = true
+            playerService.presentNowPlaying = false
+        }
         .task(id: authService.isLoggedIn) {
             if authService.isLoggedIn, let token = authService.token {
                 NotificationService.shared.startStream(token: token)

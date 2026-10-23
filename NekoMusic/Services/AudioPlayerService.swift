@@ -37,6 +37,8 @@ class AudioPlayerService: ObservableObject {
     @Published var currentPosition: TimeInterval = 0
     @Published var duration: TimeInterval = 0
     @Published var currentMusic: Music?
+    /// 用户主动点歌时置为 true，界面据此自动展开播放页
+    @Published var presentNowPlaying = false
     @Published var playMode: PlayMode = .listLoop
     @Published var isFavorite: Bool = false
     @Published var playlist: [Music] = []
@@ -433,6 +435,8 @@ class AudioPlayerService: ObservableObject {
         if index < musics.count {
             playMusic(musics[index])
         }
+        // 点歌即展开播放页，避免“点了没反应”的错觉
+        presentNowPlaying = true
     }
     
     // MARK: - Private Methods

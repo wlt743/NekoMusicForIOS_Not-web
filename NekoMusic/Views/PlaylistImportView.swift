@@ -228,7 +228,6 @@ struct PlaylistImportView: View {
                 }
 
                 ProgressView(value: Double(min(currentIndex, totalTracks)), total: Double(max(totalTracks, 1)))
-                    .tint(.accentColor)
 
                 if let summary = summary {
                     HStack(spacing: 12) {

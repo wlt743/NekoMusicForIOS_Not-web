@@ -59,7 +59,6 @@ struct ContentView: View {
                 .tabItem { Label("我的", systemImage: "person") }
                 .tag(3)
         }
-        .tint(.accentColor)
     }
 
     @ViewBuilder

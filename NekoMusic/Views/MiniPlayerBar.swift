@@ -58,7 +58,6 @@ struct MiniPlayerBar: View {
         .overlay(alignment: .bottom) {
             ProgressView(value: progress)
                 .progressViewStyle(.linear)
-                .tint(.accentColor)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 1)
         }
@@ -124,7 +123,6 @@ struct MiniPlayerAccessory: View {
 
             ProgressView(value: progress)
                 .progressViewStyle(.linear)
-                .tint(.accentColor)
                 .frame(height: 3)
         }
         .padding(.horizontal, 18)

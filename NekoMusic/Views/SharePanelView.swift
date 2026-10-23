@@ -83,9 +83,10 @@ struct SharePanelView: View {
     private let channels: [ShareChannel] = [
         ShareChannel(id: "wechat", name: "微信", bundleID: "com.tencent.xin", scheme: "weixin://"),
         ShareChannel(id: "qq", name: "QQ", bundleID: "com.tencent.mqq", scheme: "mqq://"),
+        ShareChannel(id: "x", name: "X", bundleID: "com.atebits.Tweetie2", scheme: "twitter://"),
     ]
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 4)
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 5)
 
     var body: some View {
         VStack(spacing: 0) {

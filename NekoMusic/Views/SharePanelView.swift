@@ -189,9 +189,14 @@ struct SharePanelView: View {
 
     private func channelButton(_ channel: ShareChannel) -> some View {
         Button {
-            // iOS 不允许直接指定分享到某个 App，
-            // 统一调系统分享面板，由用户在其中选择微信 / QQ / X
-            showSystemShare = true
+            // 复制文案后直接打开对应 App（没有 SDK 时的折中）
+            UIPasteboard.general.string = text
+            if let url = URL(string: channel.scheme), UIApplication.shared.canOpenURL(url) {
+                openURL(url)
+            } else {
+                alertMessage = "没有检测到\(channel.name)，内容已复制到剪贴板"
+                showAlert = true
+            }
         } label: {
             VStack(spacing: 7) {
                 iconView(channel)

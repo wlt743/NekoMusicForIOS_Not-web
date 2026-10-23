@@ -76,6 +76,24 @@ final class LyricLiveActivityManager {
         isUpdating = false
     }
 
+    /// App 启动时清掉旧版本残留的活动，避免显示过期结构
+    func endAll() {
+        activity = nil
+        lastState = nil
+        pendingState = nil
+        isUpdating = false
+
+        Task {
+            for item in Activity<LyricActivityAttributes>.activities {
+                if #available(iOS 16.2, *) {
+                    await item.end(nil, dismissalPolicy: .immediate)
+                } else {
+                    await item.end(dismissalPolicy: .immediate)
+                }
+            }
+        }
+    }
+
     func end() {
         guard #available(iOS 16.1, *) else { return }
         guard let activity = activity else { return }

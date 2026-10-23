@@ -217,6 +217,16 @@ class AudioPlayerService: ObservableObject {
 
         let neighborhood = lyricNeighborhood()
         let playing = isPlaying
+        // 歌词还没到 / 解析为空时给个占位，别把卡片刷成空白
+        let currentLine: String
+        if !neighborhood.current.isEmpty {
+            currentLine = neighborhood.current
+        } else if currentLyrics.isEmpty {
+            currentLine = "正在载入歌词…"
+        } else {
+            currentLine = "纯音乐，请欣赏"
+        }
+
         if #available(iOS 16.1, *) {
             Task { @MainActor in
                 LyricLiveActivityManager.shared.update(
@@ -224,7 +234,7 @@ class AudioPlayerService: ObservableObject {
                     artist: music.artist,
                     artworkData: self.artworkDataCache[music.id],
                     previous: neighborhood.previous,
-                    current: neighborhood.current,
+                    current: currentLine,
                     next: neighborhood.next,
                     isPlaying: playing
                 )

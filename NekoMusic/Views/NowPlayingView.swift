@@ -74,6 +74,15 @@ struct NowPlayingView: View {
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
+                    ShareLink(item: shareText) {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                    .tint(.white)
+                    .disabled(playerService.currentMusic == nil)
+                    .accessibilityLabel("分享")
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showComments = true
                     } label: {
@@ -97,6 +106,11 @@ struct NowPlayingView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
+                        ShareLink(item: shareText) {
+                            Label("分享这首歌", systemImage: "square.and.arrow.up")
+                        }
+                        .disabled(playerService.currentMusic == nil)
+
                         Button(role: .destructive) {
                             showBlockConfirm = true
                         } label: {
@@ -134,6 +148,11 @@ struct NowPlayingView: View {
         } message: {
             Text("拉黑后这首歌会从推荐、搜索、歌单和收藏里隐藏，并跳过播放。只保存在本机。")
         }
+    }
+
+    private var shareText: String {
+        guard let music = playerService.currentMusic else { return APIConfig.baseURL }
+        return "《\(music.title)》- \(music.artist)\n\(APIConfig.baseURL)/detail/\(music.id)"
     }
 
     private func blockCurrent() {

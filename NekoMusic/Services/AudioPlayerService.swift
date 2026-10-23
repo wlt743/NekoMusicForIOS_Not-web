@@ -283,7 +283,7 @@ class AudioPlayerService: ObservableObject {
     }
 
     /// 把封面压成 96px JPEG，塞进实时活动的状态里
-    private static func smallArtworkData(from image: UIImage, maxSide: CGFloat = 96) -> Data? {
+    private static func smallArtworkData(from image: UIImage, maxSide: CGFloat = 48) -> Data? {
         let size = image.size
         guard size.width > 0, size.height > 0 else { return nil }
         let scale = min(1, maxSide / max(size.width, size.height))
@@ -292,7 +292,7 @@ class AudioPlayerService: ObservableObject {
         let resized = renderer.image { _ in
             image.draw(in: CGRect(origin: .zero, size: target))
         }
-        return resized.jpegData(compressionQuality: 0.7)
+        return resized.jpegData(compressionQuality: 0.5)
     }
 
     /// 播放中节流更新进度，保证控制中心/锁屏进度条平滑

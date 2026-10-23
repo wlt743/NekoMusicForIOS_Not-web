@@ -37,11 +37,6 @@ struct ContentView: View {
             showNowPlaying = true
             playerService.presentNowPlaying = false
         }
-        .task {
-            if #available(iOS 16.1, *) {
-                LyricLiveActivityManager.shared.endAll()
-            }
-        }
         .task(id: authService.isLoggedIn) {
             if authService.isLoggedIn, let token = authService.token {
                 NotificationService.shared.startStream(token: token)

@@ -30,15 +30,28 @@ final class LyricLiveActivityManager {
             isPlaying: true
         )
 
-        do {
-            activity = try Activity.request(
-                attributes: LyricActivityAttributes(title: title, artist: artist),
-                contentState: state,
-                pushType: nil
-            )
-            lastState = state
-        } catch {
-            NSLog("[NekoLive] request failed: %@", "\(error)")
+        Task { @MainActor in
+            // 先收掉残留活动，避免同一时间存在多个
+            for old in Activity<LyricActivityAttributes>.activities {
+                if #available(iOS 16.2, *) {
+                    await old.end(nil, dismissalPolicy: .immediate)
+                } else {
+                    await old.end(dismissalPolicy: .immediate)
+                }
+            }
+
+            do {
+                self.activity = try Activity.request(
+                    attributes: LyricActivityAttributes(title: title, artist: artist),
+                    contentState: state,
+                    pushType: nil
+                )
+                self.lastState = state
+                self.pendingState = nil
+                self.isUpdating = false
+            } catch {
+                NSLog("[NekoLive] request failed: %@", "\(error)")
+            }
         }
     }
 

@@ -8,6 +8,8 @@ enum NetworkError: Error, LocalizedError {
     case unauthorized
     case networkError(Error)
     case serverBusy
+    /// 429：操作太频繁（评论 5 秒间隔、连接数上限等）
+    case tooManyRequests
 
     var errorDescription: String? {
         switch self {
@@ -23,6 +25,7 @@ enum NetworkError: Error, LocalizedError {
             }
             return "网络错误: \(error.localizedDescription)"
         case .serverBusy: return "服务器繁忙，请稍后再试"
+        case .tooManyRequests: return "操作太频繁，请稍后再试"
         }
     }
 }
@@ -230,7 +233,10 @@ class NetworkService {
                 // 重试后仍被拒：多半是网络环境不合法（境外代理、来源异常）
                 throw NetworkError.serverError("请求被服务端拒绝，请关闭代理 / VPN 后重试")
             }
-            if httpResponse.statusCode == 429 || httpResponse.statusCode == 503 {
+            if httpResponse.statusCode == 429 {
+                throw NetworkError.tooManyRequests
+            }
+            if httpResponse.statusCode == 503 {
                 throw NetworkError.serverBusy
             }
             if !(200...299).contains(httpResponse.statusCode) {

@@ -21,6 +21,8 @@ struct CommentsView: View {
     @State private var inputText = ""
     @State private var replyTarget: ReplyTarget?
     @State private var isSubmitting = false
+    @State private var cooldown = 0
+    @State private var cooldownTask: Task<Void, Never>?
     @State private var alertMessage = ""
     @State private var showAlert = false
 
@@ -161,12 +163,16 @@ struct CommentsView: View {
                 } label: {
                     if isSubmitting {
                         ProgressView()
+                    } else if cooldown > 0 {
+                        Text("\(cooldown)s")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(.secondary)
                     } else {
                         Image(systemName: "paperplane.fill")
                             .font(.system(size: 18))
                     }
                 }
-                .disabled(isSubmitting || inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .disabled(isSubmitting || cooldown > 0 || inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
@@ -257,12 +263,34 @@ struct CommentsView: View {
                 self.replyTarget = nil
             }
             await reload()
+            startCooldown()
         } catch {
+            let message = Self.friendly(error)
             await MainActor.run {
-                self.alertMessage = error.localizedDescription
+                self.alertMessage = message
                 self.showAlert = true
             }
         }
+    }
+
+    /// 后端限制两次发表间隔 5 秒，本地也做同样的冷却
+    private func startCooldown() {
+        cooldown = 5
+        cooldownTask?.cancel()
+        cooldownTask = Task {
+            while !Task.isCancelled && cooldown > 0 {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                if Task.isCancelled { return }
+                cooldown -= 1
+            }
+        }
+    }
+
+    private static func friendly(_ error: Error) -> String {
+        if case NetworkError.tooManyRequests = error {
+            return "发送太频繁了，两次评论至少间隔 5 秒"
+        }
+        return error.localizedDescription
     }
 
     private func delete(kind: String, id: Int) async {

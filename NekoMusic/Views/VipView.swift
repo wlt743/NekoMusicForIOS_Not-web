@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// 会员中心：展示服务端在售套餐，下单后跳转支付页。
 struct VipView: View {
@@ -49,11 +50,11 @@ struct VipView: View {
         .confirmationDialog("选择支付方式", isPresented: $showPayOptions, titleVisibility: .visible) {
             Button("支付宝") {
                 guard let plan = selectedPlan else { return }
-                Task { await pay(plan, type: "alipay") }
+                startPay(plan, type: "alipay")
             }
             Button("微信支付") {
                 guard let plan = selectedPlan else { return }
-                Task { await pay(plan, type: "wxpay") }
+                startPay(plan, type: "wxpay")
             }
             Button("取消", role: .cancel) {}
         } message: {
@@ -187,6 +188,20 @@ struct VipView: View {
                 self.isLoading = false
             }
         }
+    }
+
+    /// 先确认手机上装了对应的支付 App，否则支付链接打不开
+    private func startPay(_ plan: VipPlan, type: String) {
+        let appName = type == "alipay" ? "支付宝" : "微信"
+        let scheme = type == "alipay" ? "alipay://" : "weixin://"
+
+        guard let url = URL(string: scheme), UIApplication.shared.canOpenURL(url) else {
+            alertMessage = "这台手机没有安装\(appName)，请先安装后再试，或改用另一种支付方式"
+            showAlert = true
+            return
+        }
+
+        Task { await pay(plan, type: type) }
     }
 
     private func pay(_ plan: VipPlan, type: String) async {

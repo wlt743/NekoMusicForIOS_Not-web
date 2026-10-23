@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject var playerService: AudioPlayerService
     @EnvironmentObject var authService: AuthService
+    @EnvironmentObject var appearance: AppearanceSettings
 
     @State private var dailyMusic: [Music] = []
     @State private var rankingMusic: [Music] = []
@@ -118,6 +119,23 @@ struct HomeView: View {
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background {
+            ZStack {
+                if let image = appearance.wallpaperImage {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea()
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                        .ignoresSafeArea()
+                } else {
+                    Color(.systemBackground)
+                        .ignoresSafeArea()
+                }
+            }
+        }
     }
 
     private func sectionHeader(_ title: String, systemImage: String, destination: some View) -> some View {

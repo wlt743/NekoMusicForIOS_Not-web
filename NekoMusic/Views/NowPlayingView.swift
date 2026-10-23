@@ -10,23 +10,37 @@ struct NowPlayingView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                if showLyrics {
-                    LyricsContentView(
-                        lyrics: playerService.currentLyrics,
-                        currentPosition: playerService.currentPosition
-                    )
-                } else {
-                    artwork
+                Group {
+                    if showLyrics {
+                        LyricsContentView(
+                            lyrics: playerService.currentLyrics,
+                            currentPosition: playerService.currentPosition
+                        )
+                        .contentShape(Rectangle())
+                        .simultaneousGesture(lyricsSwipe)
+                    } else {
+                        artwork
+                            .onTapGesture { toggleLyrics() }
+                            .simultaneousGesture(coverSwipe)
+                            .accessibilityAddTraits(.isButton)
+                            .accessibilityHint("轻点显示歌词")
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 trackInfo
                 progress
                 controls
             }
+            .foregroundStyle(.white)
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
+            .background {
+                coverBackground
+            }
             .navigationTitle("正在播放")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -34,6 +48,7 @@ struct NowPlayingView: View {
                     } label: {
                         Image(systemName: "chevron.backward")
                     }
+                    .tint(.white)
                     .accessibilityLabel("返回")
                 }
 
@@ -43,15 +58,18 @@ struct NowPlayingView: View {
                     } label: {
                         Image(systemName: "bubble.left.and.bubble.right")
                     }
+                    .tint(.white)
                     .disabled(playerService.currentMusic == nil)
                     .accessibilityLabel("评论")
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        showLyrics.toggle()
+                        toggleLyrics()
                     } label: {
-                        Image(systemName: showLyrics ? "text.bubble.fill" : "text.bubble")
+                        Text("词")
+                            .font(.system(size: 17, weight: showLyrics ? .bold : .regular))
+                            .foregroundStyle(showLyrics ? Color.accentColor : Color.white)
                     }
                     .accessibilityLabel(showLyrics ? "收起歌词" : "显示歌词")
                 }
@@ -62,6 +80,7 @@ struct NowPlayingView: View {
                     } label: {
                         Image(systemName: "chevron.down")
                     }
+                    .tint(.white)
                     .accessibilityLabel("收起")
                 }
             }
@@ -73,6 +92,61 @@ struct NowPlayingView: View {
             if let music = playerService.currentMusic {
                 CommentsView(music: music)
             }
+        }
+    }
+
+    // MARK: - 歌词切换
+
+    private func toggleLyrics() {
+        withAnimation(.easeInOut(duration: 0.25)) {
+            showLyrics.toggle()
+        }
+    }
+
+    /// 封面页向右滑 → 歌词
+    private var coverSwipe: some Gesture {
+        DragGesture(minimumDistance: 30)
+            .onEnded { value in
+                if value.translation.width > 60, abs(value.translation.width) > abs(value.translation.height) {
+                    toggleLyrics()
+                }
+            }
+    }
+
+    /// 歌词页向左滑 → 回到封面
+    private var lyricsSwipe: some Gesture {
+        DragGesture(minimumDistance: 30)
+            .onEnded { value in
+                if value.translation.width < -60, abs(value.translation.width) > abs(value.translation.height) {
+                    toggleLyrics()
+                }
+            }
+    }
+
+    // MARK: - 封面模糊背景
+
+    @ViewBuilder
+    private var coverBackground: some View {
+        if let music = playerService.currentMusic {
+            RemoteImage(
+                url: APIConfig.buildMusicCoverURL(musicId: music.id, coverFilePath: music.coverFilePath)
+            ) { image in
+                image
+                    .resizable()
+                    .scaledToFill()
+            } placeholder: {
+                Color(.systemBackground)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .scaleEffect(1.35)
+            .blur(radius: 55)
+            .overlay(Color.black.opacity(0.42))
+            .clipped()
+            .ignoresSafeArea()
+            .animation(.easeInOut(duration: 0.35), value: music.id)
+        } else {
+            Color(.systemBackground)
+                .ignoresSafeArea()
         }
     }
 
@@ -100,7 +174,7 @@ struct NowPlayingView: View {
             }
             .frame(width: 280, height: 280)
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
+            .shadow(color: .black.opacity(0.35), radius: 24, x: 0, y: 12)
         }
 
         Spacer(minLength: 8)
@@ -117,7 +191,7 @@ struct NowPlayingView: View {
 
             Text(playerService.currentMusic?.artist ?? "未知歌手")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.7))
                 .lineLimit(1)
         }
         .padding(.top, 20)
@@ -134,7 +208,7 @@ struct NowPlayingView: View {
                 ),
                 in: 0...max(playerService.duration, 1)
             )
-            .tint(.accentColor)
+            .tint(.white)
 
             HStack {
                 Text(formatTime(playerService.currentPosition))
@@ -143,7 +217,7 @@ struct NowPlayingView: View {
             }
             .font(.caption)
             .monospacedDigit()
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.white.opacity(0.6))
         }
         .padding(.top, 12)
     }
@@ -190,11 +264,12 @@ struct NowPlayingView: View {
             } label: {
                 Image(systemName: playerService.isFavorite ? "heart.fill" : "heart")
                     .font(.title3)
-                    .foregroundStyle(playerService.isFavorite ? Color.accentColor : Color.primary)
+                    .foregroundStyle(playerService.isFavorite ? Color.accentColor : Color.white)
             }
             .accessibilityLabel(playerService.isFavorite ? "取消收藏" : "收藏")
         }
         .buttonStyle(.plain)
+        .foregroundStyle(.white)
         .padding(.top, 28)
     }
 
@@ -202,7 +277,7 @@ struct NowPlayingView: View {
 
     private var edgeSwipeArea: some View {
         Color.clear
-            .frame(width: 24)
+            .frame(width: 20)
             .contentShape(Rectangle())
             .gesture(
                 DragGesture(minimumDistance: 12)

@@ -337,6 +337,10 @@ struct PlaylistImportView: View {
                 await MainActor.run {
                     self.isImporting = false
                     self.isFinished = true
+                    if self.summary == nil && self.errorMessage == nil {
+                        self.errorMessage = "导入没有返回结果，请检查网络后重试"
+                        self.showError = true
+                    }
                 }
             } catch {
                 await MainActor.run {
@@ -368,6 +372,12 @@ struct PlaylistImportView: View {
 
         case .done(let result):
             summary = result
+            if result.imported == 0 && result.existed == 0 {
+                errorMessage = result.failed > 0
+                    ? "没有曲目导入成功（\(result.failed) 首失败）。请确认歌单是公开的，或稍后重试"
+                    : "这个歌单没有匹配到任何曲目"
+                showError = true
+            }
             currentIndex = max(currentIndex, result.total)
             if result.total != 0 {
                 started = ImportStartInfo(
@@ -379,6 +389,8 @@ struct PlaylistImportView: View {
             }
 
         case .failure(let message):
+            isImporting = false
+            isFinished = true
             errorMessage = message
             showError = true
         }

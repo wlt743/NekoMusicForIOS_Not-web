@@ -42,6 +42,8 @@
 		B1000034 /* VipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000034 /* VipView.swift */; };
 		B1000035 /* MusicUploadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000035 /* MusicUploadService.swift */; };
 		B1000036 /* MusicUploadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000036 /* MusicUploadView.swift */; };
+		B1000037 /* AppearanceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000037 /* AppearanceSettings.swift */; };
+		B1000038 /* AppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000038 /* AppearanceView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -82,6 +84,8 @@
 		B2000034 /* VipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VipView.swift; sourceTree = "<group>"; };
 		B2000035 /* MusicUploadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicUploadService.swift; sourceTree = "<group>"; };
 		B2000036 /* MusicUploadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicUploadView.swift; sourceTree = "<group>"; };
+		B2000037 /* AppearanceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettings.swift; sourceTree = "<group>"; };
+		B2000038 /* AppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +145,7 @@
 				B2000030 /* CommentService.swift */,
 				B2000032 /* NotificationService.swift */,
 				B2000035 /* MusicUploadService.swift */,
+				B2000037 /* AppearanceSettings.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -166,6 +171,7 @@
 				B2000033 /* NotificationsView.swift */,
 				B2000034 /* VipView.swift */,
 				B2000036 /* MusicUploadView.swift */,
+				B2000038 /* AppearanceView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -282,6 +288,8 @@
 				B1000034 /* VipView.swift in Sources */,
 				B1000035 /* MusicUploadService.swift in Sources */,
 				B1000036 /* MusicUploadView.swift in Sources */,
+				B1000037 /* AppearanceSettings.swift in Sources */,
+				B1000038 /* AppearanceView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

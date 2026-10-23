@@ -221,6 +221,14 @@ struct SettingsView: View {
                 }
             }
 
+            Section("外观") {
+                NavigationLink {
+                    AppearanceView()
+                } label: {
+                    Label("主题色与壁纸", systemImage: "paintpalette")
+                }
+            }
+
             Section("信息") {
                 LabeledContent("版本", value: appVersion)
             }

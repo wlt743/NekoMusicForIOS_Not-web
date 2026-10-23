@@ -4,6 +4,7 @@ struct NowPlayingView: View {
     @EnvironmentObject var playerService: AudioPlayerService
     @EnvironmentObject var appearance: AppearanceSettings
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     @State private var lyricProgress: CGFloat = 0
     @State private var dragStartProgress: CGFloat = 0
@@ -73,13 +74,15 @@ struct NowPlayingView: View {
                     .accessibilityLabel("返回")
                 }
 
-                ToolbarItem(placement: .topBarTrailing) {
-                    ShareLink(item: shareText) {
-                        Image(systemName: "square.and.arrow.up")
+                if isWideLayout {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        ShareLink(item: shareText) {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                        .tint(.white)
+                        .disabled(playerService.currentMusic == nil)
+                        .accessibilityLabel("分享")
                     }
-                    .tint(.white)
-                    .disabled(playerService.currentMusic == nil)
-                    .accessibilityLabel("分享")
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
@@ -149,6 +152,9 @@ struct NowPlayingView: View {
             Text("拉黑后这首歌会从推荐、搜索、歌单和收藏里隐藏，并跳过播放。只保存在本机。")
         }
     }
+
+    /// 折叠屏 / iPad 这类宽屏用工具栏分享，直板机放到歌名右侧
+    private var isWideLayout: Bool { horizontalSizeClass == .regular }
 
     private var shareText: String {
         guard let music = playerService.currentMusic else { return APIConfig.baseURL }
@@ -281,7 +287,21 @@ struct NowPlayingView: View {
                 .foregroundStyle(.white.opacity(0.7))
                 .lineLimit(1)
         }
+        .frame(maxWidth: .infinity)
         .padding(.top, 20)
+        .overlay(alignment: .trailing) {
+            if !isWideLayout {
+                ShareLink(item: shareText) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 19))
+                        .foregroundStyle(.white)
+                        .frame(width: 40, height: 40)
+                        .contentShape(Rectangle())
+                }
+                .disabled(playerService.currentMusic == nil)
+                .accessibilityLabel("分享")
+            }
+        }
     }
 
     // MARK: - 进度

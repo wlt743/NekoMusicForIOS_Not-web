@@ -124,6 +124,7 @@ struct ProfileView: View {
             }
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
+            .background { WallpaperBackdrop() }
             .navigationTitle("我的")
         }
         .sheet(isPresented: $showLogin) {

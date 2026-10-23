@@ -7,14 +7,6 @@ struct ContentView: View {
     @State private var showNowPlaying = false
 
     var body: some View {
-        ZStack {
-            WallpaperBackdrop()
-
-            content
-        }
-    }
-
-    private var content: some View {
         Group {
             if #available(iOS 26.1, *) {
                 tabs.tabViewBottomAccessory(isEnabled: playerService.currentMusic != nil) {

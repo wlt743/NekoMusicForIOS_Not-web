@@ -123,6 +123,7 @@ struct HomeView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+            .background { WallpaperBackdrop() }
     }
 
     private func sectionHeader(_ title: String, systemImage: String, destination: some View) -> some View {

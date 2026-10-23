@@ -206,7 +206,7 @@ struct MusicRow: View {
 /// 全 App 背景：有壁纸时铺壁纸 + 毛玻璃，否则用系统背景。
 /// 主 Tab 的列表需要同时设置 `.scrollContentBackground(.hidden)` 才能透出来。
 struct WallpaperBackdrop: View {
-    @EnvironmentObject var appearance: AppearanceSettings
+    @StateObject private var appearance = AppearanceSettings.shared
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {

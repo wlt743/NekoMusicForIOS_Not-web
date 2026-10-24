@@ -110,6 +110,40 @@ open NekoMusic.xcodeproj
 > 免费 Apple ID 签名的应用 **7 天后过期**，到期需要重新用 Xcode 运行一次；
 > 免费账号同时最多注册 3 台设备。付费开发者账号（$99/年）签名为 1 年有效期。
 
+### 方式三：SideStore / AltStore 源（推荐，可一键更新）
+
+不想每次手动重签名的话，可以用 SideStore 或 AltStore 添加本项目的源：
+
+```
+https://raw.githubusercontent.com/wlt743/NekoMusicForIOS_Not-web/main/docs/source/apps.json
+```
+
+**SideStore（推荐，手机上完成安装和更新）**
+
+1. 首次按 SideStore 官方指引配对一次（需要一台电脑，5 分钟）
+2. 打开 SideStore → Sources → 点 `+` → 粘贴上面的源地址
+3. 在源里点安装 NekoMusic
+4. 以后源里出现新版本时，直接点「更新」，**不需要电脑，也不需要 Xcode**
+
+**AltStore**
+
+1. 电脑安装 AltServer 并保持运行
+2. 手机安装 AltStore，添加同一个源地址
+3. 更新时电脑需要开着（由 AltServer 完成签名）
+
+> 免费 Apple ID 签名的 App **7 天后过期**，SideStore 会尝试后台自动刷新；
+> 如果刷新失败，在 SideStore 里手动点一次「Refresh」即可。
+
+### 方式四：手动安装未签名 IPA
+
+每次 Release 里都会附一份**未签名 IPA**，可以用任意重签工具安装：
+
+- Xcode（Window → Devices and Simulators）
+- Sideloadly
+- 爱思助手
+
+重签名后同样受 7 天有效期限制。
+
 ### 方式二：fastlane 打包签名 IPA
 
 适合需要分发给多台设备，或想保留一个可反复安装的安装包。

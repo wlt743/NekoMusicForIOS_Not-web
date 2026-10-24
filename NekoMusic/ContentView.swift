@@ -48,11 +48,12 @@ struct ContentView: View {
                     }
                 }
             } else {
+                // iOS 18 及更早：safeAreaInset 会压在系统 tab bar 上，需要手动让出 tab bar 高度
                 tabs.safeAreaInset(edge: .bottom, spacing: 0) {
                     if playerService.currentMusic != nil {
                         MiniPlayerBar(showNowPlaying: $showNowPlaying)
                             .padding(.horizontal, 12)
-                            .padding(.bottom, 4)
+                            .padding(.bottom, 49)
                     }
                 }
             }

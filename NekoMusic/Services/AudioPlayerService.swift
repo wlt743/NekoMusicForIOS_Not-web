@@ -122,32 +122,12 @@ class AudioPlayerService: ObservableObject {
             return .success
         }
 
-        // 前进 / 后退 15 秒
-        commandCenter.skipForwardCommand.isEnabled = true
-        commandCenter.skipForwardCommand.preferredIntervals = [15]
-        commandCenter.skipForwardCommand.addTarget { [weak self] event in
-            guard let self = self,
-                  let interval = (event as? MPSkipIntervalCommandEvent)?.interval else {
-                return .commandFailed
-            }
-            DispatchQueue.main.async {
-                self.seekTo(position: min(self.currentPosition + interval, max(self.duration, 0)))
-            }
-            return .success
-        }
-
-        commandCenter.skipBackwardCommand.isEnabled = true
-        commandCenter.skipBackwardCommand.preferredIntervals = [15]
-        commandCenter.skipBackwardCommand.addTarget { [weak self] event in
-            guard let self = self,
-                  let interval = (event as? MPSkipIntervalCommandEvent)?.interval else {
-                return .commandFailed
-            }
-            DispatchQueue.main.async {
-                self.seekTo(position: max(self.currentPosition - interval, 0))
-            }
-            return .success
-        }
+        // 不注册「前进/后退 15 秒」：CarPlay 与锁屏改为显示「上一首 / 下一首」。
+        // CarPlay 的 Now Playing 会优先展示 skip 命令，禁用后才会落到 next/prev。
+        commandCenter.skipForwardCommand.isEnabled = false
+        commandCenter.skipForwardCommand.preferredIntervals = []
+        commandCenter.skipBackwardCommand.isEnabled = false
+        commandCenter.skipBackwardCommand.preferredIntervals = []
     }
 
     // MARK: - Now Playing 内容
